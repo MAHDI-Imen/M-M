@@ -1,1 +1,4 @@
 Data/
+
+# Ignore venv
+venvM-M/
