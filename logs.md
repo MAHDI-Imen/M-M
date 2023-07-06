@@ -45,7 +45,7 @@ Notes:
 - [x] Modify data_loader to load slides as TensorDataset(not SubjectDataset) in case of 2D
 - [x] write training loop
 - [x] Test run for 100 epochs
-- [ ] Visualize results on Validation data
+- [x] Visualize results on Validation data
 
 Notes:
 Data will be loaded in memory all at once because it's not that big
