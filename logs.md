@@ -1,7 +1,7 @@
 # Weekly logs
 ## Week 1
 ### Tasks
-####Monday
+#### Monday
 - [x] Meeting 03/07: Initial set-up and Introduction
 - [x] Read M&M paper
 - [x] Download the dataset
