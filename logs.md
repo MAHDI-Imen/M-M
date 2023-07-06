@@ -41,8 +41,14 @@ Notes:
 #### Thursday
 - [x] Restructure code into seperate modules
 - [x] rewrite data loader function
-- [ ] Pytorch tutorial to understand DataLoader and Dataset classes
-- [ ] write train.py
+- [x] Pytorch tutorial to understand DataLoader and Dataset classes
+- [x] Modify data_loader to load slides as TensorDataset(not SubjectDataset) in case of 2D
+- [x] write training loop
+- [x] Test run for 100 epochs
+- [ ] Visualize results on Validation data
+
+Notes:
+Data will be loaded in memory all at once because it's not that big
 
 
 #### To do
@@ -51,10 +57,9 @@ Notes:
 - [ ] Get familiar with the implemented code of Projet Ima206: halfway there
 - [ ] Look up the medpy library and add evaluation to the pipeline 
 - [ ] Apply augmentations
-- [ ] Modify data_loader to load slides as Dataset(not SubjectDataset) in case of 2D
 - [ ] Add Histogram and vendor partition to utils.visualization
-- [ ] use pathlib or os for Path handling
-- [ ] Restructure load_2D as Dataset class
+- [ ] train.py
+- [ ]
 
 
 
