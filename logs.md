@@ -14,7 +14,7 @@ Meetings notes: 07/03:
 * First task is to implement an initial and simple pipeline with unet with acceptable results
 * Attention based methods can be later tested depending on progress
 
-####Tuesday
+#### Tuesday
 - [x] Load and visualize the data
 - [x] Set up cluster settings and load data in cluster
 - [x] Get familiar with TorchIO library
@@ -26,7 +26,7 @@ Notes:
 * ROI extraction is done through a centered mask of the segmentation, some additional padding, resizing 
 * New data takes around 1GB of memory storage compared to 15GB: one order of magnitude difference
 
-####Wednesday
+#### Wednesday
 - [x] Load new data
 - [x] Visualize histogram of images from different vendors
 - [x] Visualize distribution of vendors for each dataset (train, valid, test)
@@ -38,13 +38,13 @@ Notes:
 * Data loader has to be changed: we'll save each slice seperately
 * Code must be split into seperate modules and only use the notebook for testing
 
-####Thursday
+#### Thursday
 - [ ] Restructure code into seperate modules
 - [ ] rewrite data loader function
 - [ ] write train.py
 
 
-####To do
+#### To do
 - [ ] Read Unet paper
 - [ ] Read DL techniques for automatic MRI segmentation paper
 - [ ] Get familiar with the implemented code of Projet Ima206: halfway there
