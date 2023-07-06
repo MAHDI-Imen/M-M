@@ -39,8 +39,9 @@ Notes:
 * Code must be split into seperate modules and only use the notebook for testing
 
 #### Thursday
-- [ ] Restructure code into seperate modules
-- [ ] rewrite data loader function
+- [x] Restructure code into seperate modules
+- [x] rewrite data loader function
+- [ ] Pytorch tutorial to understand DataLoader and Dataset classes
 - [ ] write train.py
 
 
@@ -50,6 +51,10 @@ Notes:
 - [ ] Get familiar with the implemented code of Projet Ima206: halfway there
 - [ ] Look up the medpy library and add evaluation to the pipeline 
 - [ ] Apply augmentations
+- [ ] Modify data_loader to load slides as Dataset(not SubjectDataset) in case of 2D
+- [ ] Add Histogram and vendor partition to utils.visualization
+- [ ] use pathlib or os for Path handling
+- [ ] Restructure load_2D as Dataset class
 
 
 

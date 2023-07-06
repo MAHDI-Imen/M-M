@@ -3,7 +3,7 @@ from tqdm import tqdm
 import torchio as tio 
 import pandas as pd
 
-from utils import get_subjects_names
+from utils.loading import get_subjects_names
 
 
 def get_boundaries(data, width, heigth, padding_size):

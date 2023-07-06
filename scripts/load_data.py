@@ -1,47 +1,78 @@
+import os
 from tqdm import tqdm
 import torchio as tio
+import torch
 import pandas as pd
-from scripts.utils import get_subjects_names
+from scripts.utils.loading import get_subjects_names
 
-def create_slice(image, seg, transform, slice, phase):
-  subject = tio.Subject(
-    image = tio.ScalarImage(tensor=image.data[phase,:,:,slice].unsqueeze(0).unsqueeze(0)),
-    seg = tio.LabelMap(tensor=seg.data[phase,:,:,slice].unsqueeze(0).unsqueeze(0)),
-  )
-  return transform(subject)
 
     
-def load_data(data_dir, dim=2, metadata_path=None, transform=None):
-    if metadata_path==None:
-        metadata_path = "/home/ids/mahdi-22/M-M/Data/M&Ms/OpenDataset/211230_M&Ms_Dataset_information_diagnosis_opendataset.csv"
+def load_2D(data_dir, transform=None):
+
+    if transform is None:
+        transform = tio.RescaleIntensity((0, 1))
+
+    root_dir = "/home/ids/mahdi-22/M-M/Data/M&Ms/OpenDataset/"
+    subjects_ids = get_subjects_names(data_dir, root_dir, verbose=False)
+
+    images = []
+    labels = []
+    for subject_id in tqdm(subjects_ids):
+        image_path = os.path.join(root_dir, data_dir, subject_id, f"{subject_id}_sa.nii.gz")
+        seg_path = os.path.join(root_dir, data_dir, subject_id, f"{subject_id}_sa_gt.nii.gz")
+
+        image = tio.ScalarImage(image_path)
+        seg = tio.LabelMap(seg_path)
+
+        image = transform(image)
+        seg = transform(seg)
+
+        for slice in range(image.shape[-1]):
+            ed_slice = image.data[0, :, :, slice].unsqueeze(0)
+            images.append(ed_slice)
+            es_slice = image.data[1, :, :, slice].unsqueeze(0)
+            images.append(es_slice)
+            ed_seg = seg.data[0, :, :, slice].unsqueeze(0)
+            labels.append(ed_seg)
+            es_seg = seg.data[1, :, :, slice].unsqueeze(0)
+            labels.append(es_seg)
+
+    dataset = torch.stack(images), torch.stack(labels)
+    n = len(images)
+
+    print(data_dir, 'Dataset size:', n, 'subjects')
+    return dataset
+
+
+
+
+def load_3D(data_dir, transform=None):
     if transform==None:
         transform = tio.RescaleIntensity((0,1))
 
-    
-    metadata = pd.read_csv(metadata_path, index_col=1).drop(columns="Unnamed: 0")
     root_dir = "/home/ids/mahdi-22/M-M/Data/M&Ms/OpenDataset/"
     subjects_ids = get_subjects_names(data_dir, root_dir,verbose=False)
 
+
     subjects = []
     for subject_id in tqdm(subjects_ids):
-        image = tio.ScalarImage(f"{root_dir}{data_dir}{subject_id}/{subject_id}_sa.nii.gz")
-        seg = tio.LabelMap(f"{root_dir}{data_dir}{subject_id}/{subject_id}_sa_gt.nii.gz")
 
-        if dim==2:
-            for slice in range(image.shape[-1]):
-                ed_slice = create_slice(image, seg, transform, slice=slice, phase=0)
-                subjects.append(ed_slice)
-                es_slice = create_slice(image, seg, transform, slice=slice, phase=1)
-                subjects.append(es_slice)
-        else:    
-            subject = tio.Subject(
-              image = image,
-              seg = seg,
-            )
-            subjects.append(transform(subject))
+        image_path = os.path.join(root_dir, data_dir, subject_id, f"{subject_id}_sa.nii.gz")
+        seg_path = os.path.join(root_dir, data_dir, subject_id, f"{subject_id}_sa_gt.nii.gz")
 
+        image = tio.ScalarImage(image_path)
+        seg = tio.LabelMap(seg_path)
+
+        subject = tio.Subject(
+            image = image,
+            seg = seg,
+        )
+
+        subjects.append(transform(subject))
     dataset = tio.SubjectsDataset(subjects)
-    print(data_dir ,'Dataset size:', len(dataset), 'subjects')
+    n = len(dataset)
+       
+    print(data_dir ,'Dataset size:', n, 'subjects')
 
     return dataset
 
