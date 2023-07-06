@@ -4,9 +4,9 @@ import torchio as tio
 import torch
 import pandas as pd
 from scripts.utils.loading import get_subjects_names
+from torch.utils.data import  TensorDataset
 
 
-    
 def load_2D(data_dir, transform=None):
 
     if transform is None:
@@ -37,7 +37,7 @@ def load_2D(data_dir, transform=None):
             es_seg = seg.data[1, :, :, slice].unsqueeze(0)
             labels.append(es_seg)
 
-    dataset = torch.stack(images), torch.stack(labels)
+    dataset = TensorDataset(torch.stack(images), torch.stack(labels))
     n = len(images)
 
     print(data_dir, 'Dataset size:', n, 'subjects')
