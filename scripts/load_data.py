@@ -66,6 +66,7 @@ def load_3D(data_dir, transform=None):
         subject = tio.Subject(
             image = image,
             seg = seg,
+            id = subject_id
         )
 
         subjects.append(transform(subject))

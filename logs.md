@@ -50,6 +50,18 @@ Notes:
 Notes:
 Data will be loaded in memory all at once because it's not that big
 
+#### Friday
+- [x] Add validation loss to training loop
+- [x] Add save model checkpoints
+- [x] Calculate Dice-coeff
+- [ ] Rewrite training section and results visualiation as seperate modules for easier manipulation
+- [x] Visualize results on a subject from each vendor from test set
+- [ ] Rewrite the subject prediction per vendor section as a module
+
+Notes
+* Overfitting on training data
+
+
 
 #### To do
 - [ ] Read Unet paper
