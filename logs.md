@@ -54,13 +54,16 @@ Data will be loaded in memory all at once because it's not that big
 - [x] Add validation loss to training loop
 - [x] Add save model checkpoints
 - [x] Calculate Dice-coeff
-- [ ] Rewrite training section and results visualiation as seperate modules for easier manipulation
+- [x] Rewrite training section and results visualiation as seperate modules for easier manipulation
 - [x] Visualize results on a subject from each vendor from test set
-- [ ] Rewrite the subject prediction per vendor section as a module
+- [x] Rewrite the subject prediction per vendor section as a module
+- [x] train.py
+
 
 Notes
 * Overfitting on training data
-
+* C8J7L5 was removed from valid
+* E3F5U2, C8O0P2 were removed from test
 
 
 #### To do
@@ -70,8 +73,4 @@ Notes
 - [ ] Look up the medpy library and add evaluation to the pipeline 
 - [ ] Apply augmentations
 - [ ] Add Histogram and vendor partition to utils.visualization
-- [ ] train.py
-- [ ]
-
-
 

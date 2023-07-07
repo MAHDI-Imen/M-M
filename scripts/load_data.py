@@ -3,12 +3,19 @@ from tqdm import tqdm
 import torchio as tio
 import torch
 import pandas as pd
-from scripts.utils.loading import get_subjects_names
 from torch.utils.data import  TensorDataset
+
+import glob
+
+
+def get_subjects_names(dir, root_dir="", verbose=False):
+  subjects_names = glob.glob("*", root_dir=root_dir+dir)
+  if verbose:
+    print(f"subjects for {dir[:-1]}: {len(subjects_names)}")
+  return subjects_names
 
 
 def load_2D(data_dir, transform=None):
-
     if transform is None:
         transform = tio.RescaleIntensity((0, 1))
 
@@ -74,8 +81,8 @@ def load_3D(data_dir, transform=None):
     n = len(dataset)
        
     print(data_dir ,'Dataset size:', n, 'subjects')
-
     return dataset
+
 
 
 def main():

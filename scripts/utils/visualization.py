@@ -1,4 +1,9 @@
 import matplotlib.pyplot as plt 
+import torchvision
+import numpy as np
+from ..train import predict_3D
+import torch
+import torchio as tio
 
 def visualize_subject(subject):
     # Visualize one subject
@@ -19,6 +24,64 @@ def visualize_slice(image, seg):
 
     plt.tight_layout()
     plt.show()
+
+def visualize_batch(images, labels=None):
+    images_grid = torchvision.utils.make_grid(images).numpy()[0]
+    plt.imshow(images_grid, "gray")
+    if labels is not None:
+        labels_grid = torchvision.utils.make_grid(labels).numpy()[0]
+        cmap = plt.colormaps.get_cmap('jet')
+        mask = np.ma.masked_where(labels_grid == 0, labels_grid)
+        plt.imshow(mask, cmap=cmap, alpha=0.5)
+        plt.title("A batch of images")
+        plt.tick_params(left = False, right = False , labelleft = False ,
+                labelbottom = False, bottom = False)
+        plt.show()
+
+def visualize_predictions(images, labels, predictions, n_examples=3, step=8):
+    plt.figure(figsize=(12, 4 * n_examples))
+
+    for i in range(n_examples):
+        index = i*step
+        input_image = images[index]
+        ground_truth = labels[index]
+        predicted_mask = predictions[index]
+
+        input_image = input_image.permute(1, 2, 0).numpy()
+        ground_truth = ground_truth.permute(1, 2, 0).numpy()
+        predicted_mask = predicted_mask.numpy()
+
+        plt.subplot(n_examples, 3, i*3 + 1)
+        plt.imshow(input_image, cmap='gray')
+        plt.title('Input Image')
+
+        plt.subplot(n_examples, 3, i*3 + 2)
+        plt.imshow(ground_truth)
+        plt.title('Ground Truth')
+
+        plt.subplot(n_examples, 3, i*3 + 3)
+        plt.imshow(predicted_mask)
+        plt.title('Predicted Mask')
+
+    plt.show()
+
+def visualize_predictions_3D(model, subject, device):
+    predictions = predict_3D(model, subject, device)
+
+    # Restack prediction as 4D tensor 
+    z = subject.image.data.shape[-1]
+    predictions = torch.stack((predictions[:z],predictions[z:]))
+    predictions = predictions.permute((0,2,3,1)).float()
+    pred = tio.LabelMap(tensor=subject.seg.data, affine = subject.seg.affine, dtype=torch.FloatTensor)
+    pred.set_data(predictions)
+
+    new_subject = tio.Subject(
+        image = subject.image,
+        seg = subject.seg,
+        prediction = pred
+        )
+    
+    new_subject.plot()
 
 
 # def plot_histogram(axis, tensor, num_positions=50, label=None, alpha=0.5, color=None):
