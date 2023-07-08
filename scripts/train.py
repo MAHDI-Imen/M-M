@@ -1,6 +1,5 @@
 from tqdm import tqdm 
 import torch
-from scripts.utils.visualization import visualize_batch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
@@ -75,9 +74,6 @@ def train_model(model,
     total_steps = len(train_loader)   
 
 
-    if verbose>2:
-        images, labels = next(iter(train_loader))
-        visualize_batch(images, labels)
     if verbose==0:
         epochs = range(num_epochs)
     else:

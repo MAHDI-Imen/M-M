@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt 
 import torchvision
 import numpy as np
-from ..train import predict_3D
 import torch
 import torchio as tio
+from ..train import predict_3D
+
 
 def visualize_subject(subject):
     # Visualize one subject
@@ -12,18 +13,29 @@ def visualize_subject(subject):
     print(subject.seg)
     subject.plot() #ED channel 0 #ES channel 1
 
-def visualize_slice(image, seg):    
-    # Visualize one slice
-    plt.subplot(1, 2, 1)
-    plt.imshow(image.squeeze().numpy(), cmap="gray")
-    plt.title("Image")
+def visualize_slice(image, seg, overlay=False, alpha=0.5):   
+    if not overlay:
+        plt.subplot(1, 2, 2)
+        plt.imshow(seg.squeeze().numpy())
+        plt.title("Segmentation")
+        plt.tick_params(left = False, right = False , labelleft = False ,
+                labelbottom = False, bottom = False)
 
-    plt.subplot(1, 2, 2)
-    plt.imshow(seg.squeeze().numpy())
-    plt.title("Segmentation")
+        plt.subplot(1, 2, 1)
+        plt.imshow(image.squeeze().numpy(), cmap="gray")
+        plt.title("Image")
+        plt.tight_layout()
 
-    plt.tight_layout()
-    plt.show()
+
+    else:
+        mask = seg.squeeze().numpy()
+        masked = np.ma.masked_where(mask == 0, mask)
+        plt.imshow(image.squeeze().numpy(), cmap="gray")
+        plt.imshow(masked,  alpha=alpha)
+        plt.title("Image")
+    
+    plt.tick_params(left = False, right = False , labelleft = False ,
+                labelbottom = False, bottom = False)
 
 def visualize_batch(images, labels=None):
     images_grid = torchvision.utils.make_grid(images).numpy()[0]

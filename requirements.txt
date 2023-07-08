@@ -4,4 +4,4 @@ torchvision
 matplotlib
 numpy
 pandas
-medpy
+miseval
