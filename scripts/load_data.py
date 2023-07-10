@@ -17,7 +17,7 @@ def get_subjects_names(dir, root_dir="", verbose=False):
 
 def load_2D(data_dir, transform=None):
     if transform is None:
-        transform = tio.RescaleIntensity((0, 1))
+        transform = tio.RescaleIntensity((0, 1), percentiles=(0.5, 99.5))
 
     root_dir = "/home/ids/mahdi-22/M-M/Data/M&Ms/OpenDataset/"
     subjects_ids = get_subjects_names(data_dir, root_dir, verbose=False)
@@ -55,7 +55,7 @@ def load_2D(data_dir, transform=None):
 
 def load_3D(data_dir, transform=None):
     if transform==None:
-        transform = tio.RescaleIntensity((0,1))
+        transform = tio.RescaleIntensity((0,1), percentiles=(0.5, 99.5))
 
     root_dir = "/home/ids/mahdi-22/M-M/Data/M&Ms/OpenDataset/"
     subjects_ids = get_subjects_names(data_dir, root_dir,verbose=False)
@@ -87,7 +87,7 @@ def load_3D(data_dir, transform=None):
 
 def load_vendor_2D(vendor, metadata,transform=None):
     if transform is None:
-        transform = tio.RescaleIntensity((0, 1))
+        transform = tio.RescaleIntensity((0, 1), percentiles=(0.5, 99.5))
 
 
     data_dir = "Data/M&Ms/OpenDataset/"
@@ -128,7 +128,7 @@ def load_vendor_2D(vendor, metadata,transform=None):
 
 def load_vendor_3D(vendor, metadata, transform=None):
     if transform==None:
-        transform = tio.RescaleIntensity((0,1))
+        transform = tio.RescaleIntensity((0,1), percentiles=(0.5, 99.5))
 
     data_dir = "Data/M&Ms/OpenDataset/"
     subjects_folders = glob.glob("*/*/", root_dir=data_dir)
