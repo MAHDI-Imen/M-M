@@ -76,11 +76,19 @@ Notes
 - [x] Train on only one vendor
 - [x] Visualize results for each vendor seperately
 - [x] Analyise results with a boxplot
-- [ ] Meeting: discuss results and next steps
+- [x] Meeting: discuss results and next steps
+- [ ] Change scaling: add percentile
+- [ ] https://einops.rocks/1-einops-basics/ for the reshape
+- [ ] Try Padding 1 instead of True
+
 
 Notes:
 * Medpy is outdated. Used medeval instead which is way better
+* Voxel spacing is not the same for all images in the x and y directions
+
+
 Meetings notes: 07/10:
+* CrossEntropy instead of BCE
 * 
 
 #### Tuesday
@@ -95,6 +103,11 @@ Meetings notes: 07/10:
 - [ ] Read Unet paper
 - [ ] Read DL techniques for automatic MRI segmentation paper
 - [ ] Get familiar with the implemented code of Projet Ima206: halfway there
-- [ ] Apply augmentations
+
 - [ ] Add Histogram and vendor partition to utils.visualization
 
+
+- [ ] Apply augmentations : spatial((rotation, crop), ): one at a time and then together. Intensity(Blur, Gaussian noise, gamma augmentation, Brightness) : Make this as a pipeline
+- [ ] Early stopping
+- [ ] Use CrossEntropyLoss instead of BCEwithlogits
+- [ ] Results of A: results just on validation 
