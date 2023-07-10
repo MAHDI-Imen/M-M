@@ -66,11 +66,35 @@ Notes
 * E3F5U2, C8O0P2 were removed from test
 
 
+
+## Week 2
+### Tasks
+#### Monday
+- [x] Look up the medpy library and add evaluation to the pipeline
+- [x] Use medeval instead of medpy
+- [x] Load data by vendor
+- [x] Train on only one vendor
+- [x] Visualize results for each vendor seperately
+- [x] Analyise results with a boxplot
+- [ ] Meeting: discuss results and next steps
+
+Notes:
+* Medpy is outdated. Used medeval instead which is way better
+Meetings notes: 07/10:
+* 
+
+#### Tuesday
+
+#### Wednesday
+
+#### Thursday
+
+#### Friday
+
 #### To do
 - [ ] Read Unet paper
 - [ ] Read DL techniques for automatic MRI segmentation paper
 - [ ] Get familiar with the implemented code of Projet Ima206: halfway there
-- [ ] Look up the medpy library and add evaluation to the pipeline 
 - [ ] Apply augmentations
 - [ ] Add Histogram and vendor partition to utils.visualization
 
