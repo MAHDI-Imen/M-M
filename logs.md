@@ -77,9 +77,7 @@ Notes
 - [x] Visualize results for each vendor seperately
 - [x] Analyise results with a boxplot
 - [x] Meeting: discuss results and next steps
-- [ ] Change scaling: add percentile
-- [ ] https://einops.rocks/1-einops-basics/ for the reshape
-- [ ] Try Padding 1 instead of True
+- [x] Change scaling: add percentile
 
 
 Notes:
@@ -89,9 +87,12 @@ Notes:
 
 Meetings notes: 07/10:
 * CrossEntropy instead of BCE
-* 
 
 #### Tuesday
+- [x] Results of A: results just on validation 
+- [ ] https://einops.rocks/1-einops-basics/ for the reshape
+- [ ] Try Padding 1 instead of True
+
 
 #### Wednesday
 
@@ -110,4 +111,3 @@ Meetings notes: 07/10:
 - [ ] Apply augmentations : spatial((rotation, crop), ): one at a time and then together. Intensity(Blur, Gaussian noise, gamma augmentation, Brightness) : Make this as a pipeline
 - [ ] Early stopping
 - [ ] Use CrossEntropyLoss instead of BCEwithlogits
-- [ ] Results of A: results just on validation 

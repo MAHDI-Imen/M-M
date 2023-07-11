@@ -125,7 +125,6 @@ def predict_3D(model, subject, device):
     # Stack 4D image as a batch of 2D images
     stacked = image.permute((0,3,1,2)).reshape(c*z, 1 ,x, y)
     predictions = predict(model, stacked, device)
-
     return predictions
 
 
