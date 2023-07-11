@@ -92,7 +92,11 @@ Meetings notes: 07/10:
 - [x] Results of A: results just on validation 
 - [ ] https://einops.rocks/1-einops-basics/ for the reshape
 - [ ] Try Padding 1 instead of True
+- [ ] Early stopping
+- [x] Visualize a slice before and after intensenty cropping
 
+Notes:
+* There are artifacts in the volumes that might make percentile results different for different vendors.
 
 #### Wednesday
 
@@ -103,11 +107,19 @@ Meetings notes: 07/10:
 #### To do
 - [ ] Read Unet paper
 - [ ] Read DL techniques for automatic MRI segmentation paper
+- [ ] Studying Robustness of Semantic Segmentation under Domain Shift in cardiac MRI: Library batch generators
 - [ ] Get familiar with the implemented code of Projet Ima206: halfway there
 
 - [ ] Add Histogram and vendor partition to utils.visualization
 
 
-- [ ] Apply augmentations : spatial((rotation, crop), ): one at a time and then together. Intensity(Blur, Gaussian noise, gamma augmentation, Brightness) : Make this as a pipeline
-- [ ] Early stopping
 - [ ] Use CrossEntropyLoss instead of BCEwithlogits
+- [ ] Evaluation for ed and es seperately
+- [ ] Verify the code for 3D in miseval: verify input format
+- [ ] Add more padding
+- [ ] Crop (256, 256)
+- [ ] Resampling uniform voxel spacing=1.25 : the whole image
+
+- [ ] Apply augmentations : spatial((rotation(composed of big and small rotation), crop), flip, elastic): one at a time and then together. Intensity(Blur, Gaussian noise, gamma augmentation, Brightness) : Make this as a pipeline
+
+- [ ] Test time augmentation

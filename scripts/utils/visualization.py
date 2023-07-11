@@ -40,6 +40,9 @@ def visualize_slice(image, seg, overlay=False, alpha=0.5):
 def visualize_batch(images, labels=None):
     images_grid = torchvision.utils.make_grid(images).numpy()[0]
     plt.imshow(images_grid, "gray")
+    plt.title("A batch of images")
+    plt.tick_params(left = False, right = False , labelleft = False ,
+    labelbottom = False, bottom = False)
     if labels is not None:
         labels_grid = torchvision.utils.make_grid(labels).numpy()[0]
         cmap = plt.colormaps.get_cmap('jet')
@@ -48,7 +51,7 @@ def visualize_batch(images, labels=None):
         plt.title("A batch of images")
         plt.tick_params(left = False, right = False , labelleft = False ,
                 labelbottom = False, bottom = False)
-        plt.show()
+    plt.show()
 
 def visualize_predictions(images, labels, predictions, n_examples=3, step=8):
     plt.figure(figsize=(12, 4 * n_examples))
