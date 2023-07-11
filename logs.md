@@ -58,6 +58,7 @@ Data will be loaded in memory all at once because it's not that big
 - [x] Visualize results on a subject from each vendor from test set
 - [x] Rewrite the subject prediction per vendor section as a module
 - [x] train.py
+- [x] Get familiar with the implemented code of Projet Ima206: General overview
 
 
 Notes
@@ -90,13 +91,26 @@ Meetings notes: 07/10:
 
 #### Tuesday
 - [x] Results of A: results just on validation 
-- [ ] https://einops.rocks/1-einops-basics/ for the reshape
-- [ ] Try Padding 1 instead of True
-- [ ] Early stopping
-- [x] Visualize a slice before and after intensenty cropping
+- [x] Visualize a batch of images for a subject from every vendor before and after intensenty cropping
+- [x] Train model on the two transforms (with and without percentile) and see results 
+- [x] Use CrossEntropyLoss instead of BCEwithlogits
+- [x] Meeting: Follow up
+- [x] Try Padding 1 instead of True: same thing
+- [x] Fix random seed problem
+- [x] Early stopping
+- [ ] Evaluation for ed and es seperately
+
+
 
 Notes:
 * There are artifacts in the volumes that might make percentile results different for different vendors.
+* Seed is not working correctly: slightly different results for two identical runs.
+* upsample_bilinear2d_backward_out_cuda does not have a deterministic implementation
+* CrossEntropy is better
+
+Meeting Notes:
+* Evaluating 3D is different than evaluating 2D: check implementation on miseval
+* ES and ED should be considered seperately
 
 #### Wednesday
 
@@ -105,21 +119,23 @@ Notes:
 #### Friday
 
 #### To do
+##### Reading
 - [ ] Read Unet paper
 - [ ] Read DL techniques for automatic MRI segmentation paper
 - [ ] Studying Robustness of Semantic Segmentation under Domain Shift in cardiac MRI: Library batch generators
-- [ ] Get familiar with the implemented code of Projet Ima206: halfway there
 
-- [ ] Add Histogram and vendor partition to utils.visualization
-
-
-- [ ] Use CrossEntropyLoss instead of BCEwithlogits
-- [ ] Evaluation for ed and es seperately
+##### Priorities
 - [ ] Verify the code for 3D in miseval: verify input format
 - [ ] Add more padding
 - [ ] Crop (256, 256)
 - [ ] Resampling uniform voxel spacing=1.25 : the whole image
 
+
+##### Next steps
 - [ ] Apply augmentations : spatial((rotation(composed of big and small rotation), crop), flip, elastic): one at a time and then together. Intensity(Blur, Gaussian noise, gamma augmentation, Brightness) : Make this as a pipeline
 
 - [ ] Test time augmentation
+
+##### If I have extra time
+- [ ] https://einops.rocks/1-einops-basics/ for the reshape
+- [ ] Add Histogram and vendor partition to utils.visualization

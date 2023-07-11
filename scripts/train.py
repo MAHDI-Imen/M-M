@@ -4,15 +4,29 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 
-def save_model(model_name, model, optimizer, num_epochs, total_steps, train_losses, valid_losses):
+def save_model(model_name, 
+               model, 
+               optimizer, 
+               num_epochs, 
+               total_steps, 
+               train_losses, 
+               valid_losses, 
+               epoch,
+               best_results=None):
+    if best_results is None:
+        model_state = model.state_dict() 
+        optimizer_state = optimizer.state_dict()     
+    else:
+        model_state, optimizer_state = best_results
     torch.save({
-        'model_state_dict': model.state_dict(),
-        'optimizer_state_dict': optimizer.state_dict(),
+        'model_state_dict': model_state,
+        'optimizer_state_dict': optimizer_state,
         'metadata': {
             'num_epochs': num_epochs,
             'total_steps': total_steps,
             'train_losses': train_losses,
-            'valid_losses': valid_losses
+            'valid_losses': valid_losses,
+            'epoch' : epoch
         }
     }, f'models/{model_name}.pth')
 
@@ -64,6 +78,7 @@ def train_model(model,
                verbose=0,
                save=True,
                model_name=None,
+               save_best=True
                ):
     
     train_loader = DataLoader(train_dataset,
@@ -83,6 +98,8 @@ def train_model(model,
     model.to(device)
     train_losses = []
     valid_losses = []
+    best_epoch = epochs
+    min_valid_loss = float("Inf")
     for epoch in epochs:
         model, epoch_loss = train_epoch(model, optimizer, criterion, train_loader, device)
         train_losses.append(epoch_loss)
@@ -90,6 +107,13 @@ def train_model(model,
         if valid_dataset is not None:
             valid_loss = valid_epoch(model, criterion, valid_dataset, device)
             valid_losses.append(valid_loss)
+            if save_best:
+                if valid_loss<min_valid_loss:
+                    min_valid_loss = valid_loss
+                    best_model = model.state_dict()
+                    best_optimizer = optimizer.state_dict()
+                    best_epoch = epoch
+        
 
         if verbose>1:
             if epoch % 10 == 0:
@@ -100,9 +124,13 @@ def train_model(model,
 
 
     if save:
-        save_model(model_name, model, optimizer, num_epochs, total_steps, train_losses, valid_losses)
-
-    return model
+        if save_best:
+            save_model(model_name, model, optimizer, num_epochs, total_steps, train_losses, valid_losses, best_epoch, (best_model, best_optimizer))
+            model.load_state_dict(best_model)
+            return model
+        else:
+            save_model(model_name, model, optimizer, num_epochs, total_steps, train_losses, valid_losses, best_epoch)
+            return model
 
 
 def predict(model, images, device):
@@ -112,8 +140,8 @@ def predict(model, images, device):
     with torch.no_grad():
         output = model(images)
 
-    probabilities = torch.softmax(output, dim=1)
-    _, predictions = torch.max(probabilities, dim=1)
+    #probabilities = torch.softmax(output, dim=1)
+    _, predictions = torch.max(output, dim=1)
     predictions = predictions.cpu()
     return predictions
 
