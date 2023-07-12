@@ -108,7 +108,7 @@ def train_model(model,
             valid_loss = valid_epoch(model, criterion, valid_dataset, device)
             valid_losses.append(valid_loss)
             if save_best:
-                if valid_loss<min_valid_loss:
+                if valid_loss<=min_valid_loss:
                     min_valid_loss = valid_loss
                     best_model = model.state_dict()
                     best_optimizer = optimizer.state_dict()

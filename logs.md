@@ -98,7 +98,6 @@ Meetings notes: 07/10:
 - [x] Try Padding 1 instead of True: same thing
 - [x] Fix random seed problem
 - [x] Early stopping
-- [ ] Evaluation for ed and es seperately
 
 
 
@@ -113,21 +112,27 @@ Meeting Notes:
 * ES and ED should be considered seperately
 
 #### Wednesday
+- [x] Evaluation for ed and es seperately
+- [ ] Read Unet paper
+- [ ] Read DL techniques for automatic MRI segmentation paper
+- [ ] Studying Robustness of Semantic Segmentation under Domain Shift in cardiac MRI: Library batch generators
+- [ ] Read paper miseval
+- [ ] Verify the code for 3D in miseval: verify input format
+
 
 #### Thursday
+- [ ] Add more padding
+- [ ] Crop (256, 256)
+- [ ] Make an automatic pipeline 
+
 
 #### Friday
 
 #### To do
 ##### Reading
-- [ ] Read Unet paper
-- [ ] Read DL techniques for automatic MRI segmentation paper
-- [ ] Studying Robustness of Semantic Segmentation under Domain Shift in cardiac MRI: Library batch generators
+
 
 ##### Priorities
-- [ ] Verify the code for 3D in miseval: verify input format
-- [ ] Add more padding
-- [ ] Crop (256, 256)
 - [ ] Resampling uniform voxel spacing=1.25 : the whole image
 
 
@@ -135,6 +140,9 @@ Meeting Notes:
 - [ ] Apply augmentations : spatial((rotation(composed of big and small rotation), crop), flip, elastic): one at a time and then together. Intensity(Blur, Gaussian noise, gamma augmentation, Brightness) : Make this as a pipeline
 
 - [ ] Test time augmentation
+
+- [ ] Contrastive learning for automatic augmentation
+- [ ] Subjective evaluation of the quality of segmentation on unlabeled data (vendor C)
 
 ##### If I have extra time
 - [ ] https://einops.rocks/1-einops-basics/ for the reshape
