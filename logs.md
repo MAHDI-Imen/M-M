@@ -145,6 +145,7 @@ Notes:
 - [x] restructure code for result analysis 
 
 #### Tuesday
+- [ ] Fix non deterministic problem
 - [ ] Make an automatic pipeline
     - [x] Decide on a config format: YAML or INI or TOML: TOML
     - [ ] Design the config file structure

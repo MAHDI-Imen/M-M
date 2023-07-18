@@ -11,7 +11,7 @@ num_epochs = 50
 batch_size = 16
 num_workers = 10
 save = true
-save_best=True
+save_best= true
 
 [ROI]
 extract_ROI = true
@@ -19,7 +19,9 @@ padding_size = 10
 crop_size = 128
 
 [spatial_transformation]
+apply_spatial = true
 flip = true
 rotate = 45
 
 [intensity_transformation]
+apply_intensity = true
