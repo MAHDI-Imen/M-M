@@ -48,7 +48,7 @@ Notes:
 - [x] Visualize results on Validation data
 
 Notes:
-Data will be loaded in memory all at once because it's not that big
+* Data will be loaded in memory all at once because it's not that big
 
 #### Friday
 - [x] Add validation loss to training loop
@@ -127,14 +127,14 @@ Notes:
 - [x] Add more padding
 - [x] Crop (256, 256): out of memory error
 
-Notes
+Notes:
 * Without padding results dropped significantly
 
 #### Friday
 - [x] Experiment with MonteCarlo dropout
 - [x] Test various optimizers 
 
-Notes
+Notes:
 * Results are very similar despite all the variations tested
 
 ## Week 3
@@ -146,6 +146,10 @@ Notes
 
 #### Tuesday
 - [ ] Make an automatic pipeline
+    - [x] Decide on a config format: YAML or INI or TOML: TOML
+    - [ ] Design the config file structure
+    - [ ] write read_config funtion
+    - [ ] 
 
 #### To do
 ##### Reading
