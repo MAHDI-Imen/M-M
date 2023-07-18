@@ -2,6 +2,63 @@ from tqdm import tqdm
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+from unet import UNet
+import torch.nn as nn
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+
+def set_deterministic(worker_id):
+    worker_seed = torch.initial_seed() % 2**32
+    random.seed(worker_seed)
+    np.random.seed(worker_seed)
+
+
+def initialize_model():
+    torch.manual_seed(42)
+    model = UNet(
+        in_channels=1,
+        out_classes=4,
+        dimensions=2,
+        num_encoding_blocks=4,
+        out_channels_first_layer=16,
+        normalization='batch',
+        upsampling_type='conv',
+        padding=True,
+        activation='PReLU'
+    )
+
+    optimizer = torch.optim.AdamW(model.parameters())
+    criterion = nn.CrossEntropyLoss()
+    return model, optimizer, criterion
+
+
+def load_model(model_name, show_performance=False):
+    model, optimizer, _ = initialize_model()
+    checkpoint = torch.load(f'models/{model_name}.pth')
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    meta = checkpoint['metadata']
+    num_epochs = meta['num_epochs']
+    train_losses = meta['train_losses']
+    valid_losses = meta['valid_losses']
+    epoch = meta['epoch']
+
+    if show_performance:
+        print("Stopping Epoch is:", epoch)
+        plt.plot(range(num_epochs) , train_losses, label="Training loss")
+        plt.plot(range(num_epochs) , valid_losses, label="Validation loss")
+
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.title("Loss")
+        plt.grid(True)
+        plt.legend()
+        plt.show()
+
+    return model, optimizer
 
 
 def save_model(model_name, 
@@ -82,10 +139,16 @@ def train_model(model,
                save_best=True
                ):
     
+    # For determministic behavior of the dataloader
+    g = torch.Generator()
+    g.manual_seed(42)
+
     train_loader = DataLoader(train_dataset,
                               batch_size=batch_size,
                               shuffle=True,
-                              num_workers=num_workers
+                              num_workers=num_workers,
+                              worker_init_fn= set_deterministic,
+                              generator=g
                               )
     total_steps = len(train_loader)   
 
