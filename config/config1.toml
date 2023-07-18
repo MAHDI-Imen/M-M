@@ -1,0 +1,25 @@
+[model]
+model_name = "model_1"
+num_encoding_blocks=4
+out_channels_first_layer=16
+upsampling_type= 'conv'
+num_classes = 4
+
+
+[training]
+num_epochs = 50
+batch_size = 16
+num_workers = 10
+save = true
+save_best=True
+
+[ROI]
+extract_ROI = true
+padding_size = 10
+crop_size = 128
+
+[spatial_transformation]
+flip = true
+rotate = 45
+
+[intensity_transformation]
