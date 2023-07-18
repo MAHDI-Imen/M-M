@@ -113,36 +113,47 @@ Meeting Notes:
 
 #### Wednesday
 - [x] Evaluation for ed and es seperately
+- [x] Move a copy of the original data set to the cluster
+- [x] Check why there is an inconsistensy in the results
+- [x] Fix bug in train when save best = True
+- [x] Fine tune model params to get best results
+
+Notes:
+* The AHD was removed because it takes too much time to compute and it's not indicative in our case: voxel spacing is not uniform 
+* Many hyperparams were tested: not a signficant change in the results
+* Training is still non deterministic even if the conv is used for upsampling instead of linear 
+
+#### Thursday
+- [x] Add more padding
+- [x] Crop (256, 256): out of memory error
+- [ ] Make an automatic pipeline 
+- [ ] Verify the code for 3D in miseval: verify input format
+
+Notes
+* Without padding results dropped significantly
+
+#### Friday
+- [ ] Experiment with MonteCarlo dropout
+
+
+#### To do
+##### Reading
 - [ ] Read Unet paper
 - [ ] Read DL techniques for automatic MRI segmentation paper
 - [ ] Studying Robustness of Semantic Segmentation under Domain Shift in cardiac MRI: Library batch generators
 - [ ] Read paper miseval
-- [ ] Verify the code for 3D in miseval: verify input format
-
-
-#### Thursday
-- [ ] Add more padding
-- [ ] Crop (256, 256)
-- [ ] Make an automatic pipeline 
-
-
-#### Friday
-
-#### To do
-##### Reading
-
 
 ##### Priorities
 - [ ] Resampling uniform voxel spacing=1.25 : the whole image
 
 
 ##### Next steps
+- [ ] Try training on 3D volume
 - [ ] Apply augmentations : spatial((rotation(composed of big and small rotation), crop), flip, elastic): one at a time and then together. Intensity(Blur, Gaussian noise, gamma augmentation, Brightness) : Make this as a pipeline
 
 - [ ] Test time augmentation
 
 - [ ] Contrastive learning for automatic augmentation
-- [ ] Subjective evaluation of the quality of segmentation on unlabeled data (vendor C)
 
 ##### If I have extra time
 - [ ] https://einops.rocks/1-einops-basics/ for the reshape
