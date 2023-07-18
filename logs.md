@@ -126,15 +126,26 @@ Notes:
 #### Thursday
 - [x] Add more padding
 - [x] Crop (256, 256): out of memory error
-- [ ] Make an automatic pipeline 
-- [ ] Verify the code for 3D in miseval: verify input format
 
 Notes
 * Without padding results dropped significantly
 
 #### Friday
-- [ ] Experiment with MonteCarlo dropout
+- [x] Experiment with MonteCarlo dropout
+- [x] Test various optimizers 
 
+Notes
+* Results are very similar despite all the variations tested
+
+## Week 3
+### Tasks
+#### Monday
+- [x] Fix github problem
+- [x] Retrieve lost files
+- [x] restructure code for result analysis 
+
+#### Tuesday
+- [ ] Make an automatic pipeline
 
 #### To do
 ##### Reading
@@ -145,6 +156,7 @@ Notes
 
 ##### Priorities
 - [ ] Resampling uniform voxel spacing=1.25 : the whole image
+- [ ] Verify the code for 3D in miseval: verify input format
 
 
 ##### Next steps
