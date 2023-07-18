@@ -48,7 +48,7 @@ Notes:
 - [x] Visualize results on Validation data
 
 Notes:
-Data will be loaded in memory all at once because it's not that big
+* Data will be loaded in memory all at once because it's not that big
 
 #### Friday
 - [x] Add validation loss to training loop
@@ -126,15 +126,30 @@ Notes:
 #### Thursday
 - [x] Add more padding
 - [x] Crop (256, 256): out of memory error
-- [ ] Make an automatic pipeline 
-- [ ] Verify the code for 3D in miseval: verify input format
 
-Notes
+Notes:
 * Without padding results dropped significantly
 
 #### Friday
-- [ ] Experiment with MonteCarlo dropout
+- [x] Experiment with MonteCarlo dropout
+- [x] Test various optimizers 
 
+Notes:
+* Results are very similar despite all the variations tested
+
+## Week 3
+### Tasks
+#### Monday
+- [x] Fix github problem
+- [x] Retrieve lost files
+- [x] restructure code for result analysis 
+
+#### Tuesday
+- [ ] Make an automatic pipeline
+    - [x] Decide on a config format: YAML or INI or TOML: TOML
+    - [ ] Design the config file structure
+    - [ ] write read_config funtion
+    - [ ] 
 
 #### To do
 ##### Reading
@@ -145,6 +160,7 @@ Notes
 
 ##### Priorities
 - [ ] Resampling uniform voxel spacing=1.25 : the whole image
+- [ ] Verify the code for 3D in miseval: verify input format
 
 
 ##### Next steps
