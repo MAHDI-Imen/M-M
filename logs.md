@@ -144,13 +144,12 @@ Notes:
 - [x] Retrieve lost files
 - [x] restructure code for result analysis 
 
-#### Tuesday
-- [ ] Fix non deterministic problem
+#### Tuesday + Wednesday
+- [x] Fix non deterministic problem
 - [ ] Make an automatic pipeline
     - [x] Decide on a config format: YAML or INI or TOML: TOML
-    - [ ] Design the config file structure
+    - [x] Design the config file structure
     - [ ] write read_config funtion
-    - [ ] 
 
 #### To do
 ##### Reading
