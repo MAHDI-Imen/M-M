@@ -1,4 +1,4 @@
-[model]
+[Model]
 model_name = "model_1"
 num_encoding_blocks=4
 out_channels_first_layer=16
@@ -6,7 +6,7 @@ upsampling_type= 'conv'
 num_classes = 4
 
 
-[training]
+[Training]
 num_epochs = 50
 batch_size = 16
 num_workers = 10
@@ -18,10 +18,46 @@ extract_ROI = true
 padding_size = 10
 crop_size = 128
 
-[spatial_transformation]
+[Spatial]
 apply_spatial = true
-flip = true
-rotate = 45
 
-[intensity_transformation]
+    [Flip]
+    probability = 0.5
+    axes = 0 #(0,1,2)
+
+    [Affine] #Uses uniform dist and torch.randint
+    probability = 0.25
+    scales = (0.9, 0.9)
+    translation = 10 #in mm
+    isotropic = true
+    center = 'origin' #'image'
+
+    [ElasticDeformation] 
+    probability = 0.25
+    num_control_points = 10
+
+
+
+[Intensity]
 apply_intensity = true
+
+    [Motion]
+    probability = 0.25
+    degrees = 5
+    translation = 2
+    num_transforms = 1
+
+    [BiasField]
+    probability = 0.25
+    std = 0.2
+
+    [Noise]
+    probability = 0.25
+    mean = 0
+    std = 0.25
+
+    [Gamma]
+    probability = 0.25
+    log_gamma = 0.3
+
+    
