@@ -9,12 +9,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def set_deterministic(worker_id):
-    worker_seed = torch.initial_seed() % 2**32
-    random.seed(worker_seed)
-    np.random.seed(worker_seed)
-
-
 def initialize_model():
     torch.manual_seed(42)
     model = UNet(
@@ -144,17 +138,12 @@ def train_model(
     model_name=None,
     save_best=True,
 ):
-    # For determministic behavior of the dataloader
-    g = torch.Generator()
-    g.manual_seed(42)
-
+    torch.manual_seed(42)
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
         shuffle=True,
         num_workers=num_workers,
-        worker_init_fn=set_deterministic,
-        generator=g,
     )
     total_steps = len(train_loader)
 

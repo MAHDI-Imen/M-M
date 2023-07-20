@@ -149,7 +149,12 @@ Notes:
 - [ ] Make an automatic pipeline
     - [x] Decide on a config format: YAML or INI or TOML: TOML
     - [x] Design the config file structure
-    - [ ] write read_config funtion
+    - [x] write read_config funtion
+
+#### Thursday
+- [x] Create a new dataset class to be able to apply random augentation for each epoch
+- [ ] Improve data loading function:  change get_subjects_dir
+- [x] Ensure dataloader is deterministic
 
 #### To do
 ##### Reading
