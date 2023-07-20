@@ -4,8 +4,6 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from unet import UNet
 import torch.nn as nn
-import random
-import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -111,9 +109,9 @@ def train_epoch(model, optimizer, criterion, train_loader, device):
     return model, epoch_loss / len(train_loader)
 
 
-def valid_epoch(model, criterion, valid_dataset, device):
+def valid_epoch(model, criterion, valid_loader, device):
     model.eval()
-    images, labels = valid_dataset[:][0], valid_dataset[:][1]
+    images, labels = next(iter(valid_loader))
     images, labels_onehot = prepare_data(images, labels, device)
 
     with torch.no_grad():
@@ -146,7 +144,13 @@ def train_model(
         num_workers=num_workers,
     )
     total_steps = len(train_loader)
-
+    if valid_dataset is not None:
+        valid_loader = DataLoader(
+            train_dataset,
+            batch_size=len(valid_dataset),
+            shuffle=False,
+            num_workers=num_workers,
+        )
     if verbose == 0:
         epochs = range(num_epochs)
     else:
@@ -164,7 +168,7 @@ def train_model(
         train_losses.append(epoch_loss)
 
         if valid_dataset is not None:
-            valid_loss = valid_epoch(model, criterion, valid_dataset, device)
+            valid_loss = valid_epoch(model, criterion, valid_loader, device)
             valid_losses.append(valid_loss)
             if save_best:
                 if valid_loss <= min_valid_loss:
@@ -230,7 +234,7 @@ def predict_3D(model, subject, device):
     image = subject.image.data
     c, x, y, z = image.shape
 
-    # Stack 4D image as a batch of 2D images
+    # Stack 4D image as a batch of 2D images with 1 channel
     stacked = image.permute((0, 3, 1, 2)).reshape(c * z, 1, x, y)
     predictions = predict(model, stacked, device)
     return predictions

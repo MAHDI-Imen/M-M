@@ -89,7 +89,7 @@ def save_results(model_name, device, metadata, vendor_datasets_3D, show_example=
             # hd_ed = list(evaluate(ed_labels, ed_predictions, metric="AHD", multi_class=T07/10/1964
             results.loc[id, results.columns[2:]] = dc_ed + dc_es + jc_ed + jc_es
 
-    results.to_csv(f"Results/{model_name}.csv", index=True)
+    results.to_csv(f"results/{model_name}.csv", index=True)
 
     if show_example:
         fig, axes = plt.subplots(4, 12)
@@ -130,7 +130,7 @@ def plot_metric_results(results, metric, ax, title):
 
 
 def show_results(model_name):
-    results = pd.read_csv(f"Results/{model_name}.csv", index_col=0)
+    results = pd.read_csv(f"results/{model_name}.csv", index_col=0)
     grouped_by_vendor = results.groupby(["Vendor", "Centre"]).mean()
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 6))
 

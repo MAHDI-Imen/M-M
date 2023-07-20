@@ -7,3 +7,4 @@ pandas
 miseval
 seaborn
 black
+toml

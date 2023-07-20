@@ -81,7 +81,7 @@ class VendorDataset(Dataset):
         if self.augmentation_transform:
             subject = self.augmentation_transform(subject)
 
-        image = subject.image.data.squeeze()
-        label = subject.seg.data.squeeze()
+        image = subject.image.data.squeeze().unsqueeze(0)
+        label = subject.seg.data.squeeze().unsqueeze(0)
 
         return image, label

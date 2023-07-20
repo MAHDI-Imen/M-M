@@ -4,42 +4,36 @@ num_encoding_blocks=4
 out_channels_first_layer=16
 upsampling_type= 'conv'
 num_classes = 4
-
-[Training]
-num_epochs = 50
+num_epochs = 100
 batch_size = 16
-num_workers = 10
+num_workers = 8
 save = true
 save_best= true
 
 [ROI]
-extract_ROI = true
+extract_ROI = false #If true, must specify padding_size and crop_size
 padding_size = 10
 crop_size = 128
 
 [Spatial]
-apply_spatial = true
 
-    [Flip]
-    probability = 0.5
-    axes = 0 #(0,1,2)
 
-    [Affine] #Uses uniform dist and torch.randint
-    probability = 0.25
-    scales = (0.9, 0.9)
-    translation = 10 #in mm
-    isotropic = true
-    center = 'origin' #'image'
+RandomFlip.probability = 0.5
+RandomFlip.flip_probability = 1
+RandomFlip.axes = 1 #(0,1,2)
 
-    [ElasticDeformation] 
-    probability = 0.25
-    num_control_points = 10
+RandomAffine.probability = 0.5
+RandomAffine.scales = 0.9
+RandomAffine.translation = 10 #in mm
+RandomAffine.isotropic = false
+RandomAffine.center = 'image' #'image'
+ 
+#RandomElasticDeformation.#probability = 0.25
+#RandomElasticDeformation.#num_control_points = 5
 
 
 
-[Intensity]
-apply_intensity = true
-
+#[Intensity]
     [Motion]
     probability = 0.25
     degrees = 5
