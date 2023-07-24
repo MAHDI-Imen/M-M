@@ -183,7 +183,7 @@ Notes:
 - [x] write pre_process_metadata notebook: splitting by vendor
 - [x] write pre_process_metadata notebook: gather stats for vendor metadata
 - [x] Visualize distributions by vendor for x_dim, x_pixdim
-- [ ] rewrite ROI extraction notebook
+- [x] rewrite ROI extraction notebook
 - [x] Readapat code to use centers instead of vendors
 - [ ] Fix bug in training loop: one hot encoding 
 

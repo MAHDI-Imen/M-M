@@ -1,87 +1,90 @@
-import os
-import glob
-from tqdm import tqdm
-import torchio as tio
 from torch.utils.data import Dataset
+import os
+import torchio as tio
+from monai.transforms import LoadImage
+from einops import rearrange, pack
+from tqdm import tqdm
+
+from scripts.utils import get_subjects_files_paths, load_metadata
 
 
-def load_subject(subject_id, data_dir, folder, transform):
-    image_path = os.path.join(data_dir, folder, subject_id, f"{subject_id}_sa.nii.gz")
-    seg_path = os.path.join(data_dir, folder, subject_id, f"{subject_id}_sa_gt.nii.gz")
-
-    image = tio.ScalarImage(image_path)
-    seg = tio.LabelMap(seg_path)
-
-    subject = tio.Subject(image=image, seg=seg, id=subject_id)
-
-    subject_transformed = transform(subject)
-    return subject_transformed
+def load_as_2D_slices(image_path):
+    image = LoadImage(image_only=True, ensure_channel_first=True)(image_path)
+    slices = rearrange(image, "time h w slices c-> (time slices) c h w")
+    return slices
 
 
-def get_subjects_dir(data_dir):
-    subjects_folders = glob.glob("*/*/", root_dir=data_dir)
-    subject_ids = [s[-7:-1] for s in subjects_folders]
-    return subject_ids, subjects_folders
+def get_channel_index(cardiac_phase, subject_id, metadata=None):
+    if metadata is None:
+        metadata = load_metadata()
+    index = metadata.loc[metadata["External code"] == subject_id, cardiac_phase].iloc[0]
+    return index
 
 
-def create_subject(image, seg, aff):
-    image = tio.ScalarImage(tensor=image, aff=aff)
-    seg = tio.LabelMap(tensor=seg, aff=aff)
+def load_centre_2D_data(centre, root_directory, metadata=None, transform=None):
+    subject_ids, images_paths, labels_paths = get_subjects_files_paths(
+        root_directory, centre=centre, metadata=metadata
+    )
 
-    subject = tio.Subject(image=image, seg=seg)
-    return subject
+    if metadata is None:
+        metadata = load_metadata()
 
-
-def load_vendor_2D(vendor, metadata, transform=None):
-    if transform is None:
-        transform = tio.RescaleIntensity((0, 1))
-    data_dir = "Data/M&Ms/OpenDataset/"
-    subject_ids, subjects_folders = get_subjects_dir(data_dir)
-
-    subjects = []
-    for subject_id, folder in tqdm(zip(subject_ids, subjects_folders)):
-        if metadata.loc[subject_id].Vendor == vendor:
-            subject = load_subject(subject_id, data_dir, folder[:-8], transform)
-
-            image = subject.image.data
-            seg = subject.seg.data
-            aff = subject.image.affine
-
-            for slice in range(image.shape[-1]):
-                ed_slice = image.data[0, :, :, slice].unsqueeze(0).unsqueeze(-1)
-                ed_seg = seg.data[0, :, :, slice].unsqueeze(0).unsqueeze(-1)
-                subject_ed = create_subject(ed_slice, ed_seg, aff)
-
-                es_slice = image.data[1, :, :, slice].unsqueeze(0).unsqueeze(-1)
-                es_seg = seg.data[1, :, :, slice].unsqueeze(0).unsqueeze(-1)
-                subject_es = create_subject(es_slice, es_seg, aff)
-
-                subjects.extend((subject_ed, subject_es))
-
-    dataset = tio.SubjectsDataset(subjects)
-    return dataset
-
-
-class VendorDataset(Dataset):
-    def __init__(
-        self, vendor, metadata, load_transform=None, augmentation_transform=None
+    images = []
+    labels = []
+    print("Loading Files")
+    for subject_id, image_path, labels_path in tqdm(
+        zip(subject_ids, images_paths, labels_paths)
     ):
-        if load_transform is None:
-            load_transform = tio.RescaleIntensity((0, 1))
-        self.dataset_2D = load_vendor_2D(vendor, metadata, load_transform)
-        self.vendor = vendor
-        self.augmentation_transform = augmentation_transform
+        try:
+            image = load_as_2D_slices(image_path)
+            seg = load_as_2D_slices(labels_path)
+
+            if transform:
+                image = transform(image)
+                seg = transform(seg)
+
+            images.append(image)
+            labels.append(seg)
+        except:
+            print("Couldn't load:", subject_id)
+            continue
+
+    return images, labels
+
+
+def get_centre_2D_dataset(centre, root_directory, transform=None, metadata=None):
+    if metadata is None:
+        metadata = load_metadata()
+
+    images, labels = load_centre_2D_data(centre, root_directory, metadata, transform)
+    images, ps = pack(images, "* c h w")
+    labels, ps = pack(labels, "* c h w")
+    labels = rearrange(labels, "b 1 h w -> b h w")
+    return images, labels, ps
+
+
+class Centre2DDataset(Dataset):
+    def __init__(self, centre_data, transform=None):
+        self.images, self.labels = centre_data
+        self.transform = transform
 
     def __len__(self):
-        return len(self.dataset_2D)
+        return len(self.images)
 
     def __getitem__(self, index):
-        subject = self.dataset_2D[index]
+        image = self.images[index]
+        seg = self.labels[index]
 
-        if self.augmentation_transform:
-            subject = self.augmentation_transform(subject)
+        if self.transform:
+            image = self.transform(image)
+            seg = self.transform(seg)
 
-        image = subject.image.data.squeeze().unsqueeze(0)
-        label = subject.seg.data.squeeze().unsqueeze(0)
+        return image, seg
 
-        return image, label
+
+def main():
+    return 0
+
+
+if __name__ == "__main__":
+    main()
