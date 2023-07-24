@@ -133,6 +133,7 @@ Notes:
 #### Friday
 - [x] Experiment with MonteCarlo dropout
 - [x] Test various optimizers 
+- [x] use black for auto formatting
 
 Notes:
 * Results are very similar despite all the variations tested
@@ -146,15 +147,47 @@ Notes:
 
 #### Tuesday + Wednesday
 - [x] Fix non deterministic problem
-- [ ] Make an automatic pipeline
+- [x] Make an automatic pipeline
     - [x] Decide on a config format: YAML or INI or TOML: TOML
     - [x] Design the config file structure
     - [x] write read_config funtion
 
 #### Thursday
 - [x] Create a new dataset class to be able to apply random augentation for each epoch
-- [ ] Improve data loading function:  change get_subjects_dir
+- [x] Improve data loading function:  change get_subjects_dir
 - [x] Ensure dataloader is deterministic
+- [x] Write a full pipeline from config file
+
+Notes:
+* Code became too complex and messy
+* Using torchio only for ROI extraction and testtime augmentation, for training on 2D use monai
+
+
+#### Friday
+- [x] Branch out and restart project: branch name new_project
+- [x] Use pytorch lightning
+- [x] Learn Monai
+- [x] Learn einops
+
+- [x] Use https://einops.rocks/1-einops-basics/ for the reshape
+- [x] Rerwite model class to incorporate pytorch lightning
+- [x] Rewrite data loading functions and VendorDataset Class 
+
+Notes:
+* Preprocess metadata in advance: use two centers for A instead of naming a new vendor
+
+
+## Week 4
+### Tasks
+#### Monday
+- [x] write pre_process_metadata notebook: splitting by vendor
+- [x] write pre_process_metadata notebook: gather stats for vendor metadata
+- [x] Visualize distributions by vendor for x_dim, x_pixdim
+- [ ] rewrite ROI extraction notebook
+- [x] Readapat code to use centers instead of vendors
+- [ ] Fix bug in training loop: one hot encoding 
+
+
 
 #### To do
 ##### Reading
@@ -164,6 +197,7 @@ Notes:
 - [ ] Read paper miseval
 
 ##### Priorities
+- [ ] Auto DocString Extension 
 - [ ] Resampling uniform voxel spacing=1.25 : the whole image
 - [ ] Verify the code for 3D in miseval: verify input format
 
@@ -177,5 +211,4 @@ Notes:
 - [ ] Contrastive learning for automatic augmentation
 
 ##### If I have extra time
-- [ ] https://einops.rocks/1-einops-basics/ for the reshape
 - [ ] Add Histogram and vendor partition to utils.visualization
