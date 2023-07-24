@@ -185,9 +185,13 @@ Notes:
 - [x] Visualize distributions by vendor for x_dim, x_pixdim
 - [x] rewrite ROI extraction notebook
 - [x] Readapat code to use centers instead of vendors
-- [ ] Fix bug in training loop: one hot encoding 
+- [x] Fix bug in training loop: one hot encoding
+- [ ] Watch pytorch tutorial
+- [ ] Write prediction function
+- [ ] Display loss function evolution: maybe log to wandb 
 
-
+Notes:
+* new train and prediction pipeline works but must be hypertuned for better results
 
 #### To do
 ##### Reading

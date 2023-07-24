@@ -21,7 +21,9 @@ def get_channel_index(cardiac_phase, subject_id, metadata=None):
     return index
 
 
-def load_centre_2D_data(centre, root_directory, metadata=None, transform=None):
+def load_centre_2D_data(
+    centre, root_directory, metadata=None, transform=None, target_transform=None
+):
     subject_ids, images_paths, labels_paths = get_subjects_files_paths(
         root_directory, centre=centre, metadata=metadata
     )
@@ -31,7 +33,7 @@ def load_centre_2D_data(centre, root_directory, metadata=None, transform=None):
 
     images = []
     labels = []
-    print("Loading Files")
+    print("Loading Files from", root_directory)
     for subject_id, image_path, labels_path in tqdm(
         zip(subject_ids, images_paths, labels_paths)
     ):
@@ -41,7 +43,8 @@ def load_centre_2D_data(centre, root_directory, metadata=None, transform=None):
 
             if transform:
                 image = transform(image)
-                seg = transform(seg)
+            if target_transform:
+                seg = target_transform(seg)
 
             images.append(image)
             labels.append(seg)
@@ -52,11 +55,15 @@ def load_centre_2D_data(centre, root_directory, metadata=None, transform=None):
     return images, labels
 
 
-def get_centre_2D_dataset(centre, root_directory, transform=None, metadata=None):
+def get_centre_2D_dataset(
+    centre, root_directory, transform=None, target_transform=None, metadata=None
+):
     if metadata is None:
         metadata = load_metadata()
 
-    images, labels = load_centre_2D_data(centre, root_directory, metadata, transform)
+    images, labels = load_centre_2D_data(
+        centre, root_directory, metadata, transform, target_transform
+    )
     images, ps = pack(images, "* c h w")
     labels, ps = pack(labels, "* c h w")
     labels = rearrange(labels, "b 1 h w -> b h w")
@@ -64,9 +71,10 @@ def get_centre_2D_dataset(centre, root_directory, transform=None, metadata=None)
 
 
 class Centre2DDataset(Dataset):
-    def __init__(self, centre_data, transform=None):
+    def __init__(self, centre_data, transform=None, target_transform=None):
         self.images, self.labels = centre_data
         self.transform = transform
+        self.target_transform = target_transform
 
     def __len__(self):
         return len(self.images)
@@ -77,7 +85,8 @@ class Centre2DDataset(Dataset):
 
         if self.transform:
             image = self.transform(image)
-            seg = self.transform(seg)
+        if self.target_transform:
+            seg = self.target_transform(seg)
 
         return image, seg
 
