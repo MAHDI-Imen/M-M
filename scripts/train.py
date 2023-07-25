@@ -23,20 +23,20 @@ class LitUnet(pl.LightningModule):
 
         self.lr = lr
 
-        self.criterion = nn.CrossEntropyLoss(reduction="sum")
+        self.criterion = nn.CrossEntropyLoss(reduction="mean")
 
     def forward(self, x):
         output = self.Unet(x)
         return output
 
     def training_step(self, batch, batch_idx):
-        loss = self._commun_step(self, batch)
-        self.log("train_loss", loss)
+        loss = self._commun_step(batch)
+        self.log("train_loss", loss, prog_bar=True, on_epoch=True, on_step=False)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss = self._commun_step(self, batch)
-        self.log("val_loss", loss)
+        loss = self._commun_step(batch)
+        self.log("val_loss", loss, prog_bar=True, on_epoch=True, on_step=False)
         return loss
 
     def _commun_step(self, batch):
