@@ -3,3 +3,5 @@ Data_original/
 
 
 lightning_logs/
+.vscode/settings.json
+.vscode/snippets.code-snippets
