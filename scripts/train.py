@@ -30,26 +30,25 @@ class LitUnet(pl.LightningModule):
         return output
 
     def training_step(self, batch, batch_idx):
-        x, y = batch
-        output = self(x)
-        probabilities = F.softmax(output, dim=1)
-        y_one_hot = F.one_hot(y.long(), num_classes=4)
-        y_one_hot = rearrange(y_one_hot, "b h w c -> b c h w").float()
-        loss = self.criterion(probabilities, y_one_hot)
+        loss = self._commun_step(self, batch)
         self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
+        loss = self._commun_step(self, batch)
+        self.log("val_loss", loss)
+        return loss
+
+    def _commun_step(self, batch):
         x, y = batch
 
         output = self(x)
         probabilities = F.softmax(output, dim=1)
 
         y_one_hot = F.one_hot(y.long(), num_classes=4)
-        y_one_hot = rearrange(y_one_hot, "b h w c -> b c h w").float()
+        y_one_hot = rearrange(y_one_hot, "b h w c -> b c h w").double()
 
         loss = self.criterion(probabilities, y_one_hot)
-        self.log("val_loss", loss)
         return loss
 
     def configure_optimizers(self):

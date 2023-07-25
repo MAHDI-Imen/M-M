@@ -186,12 +186,23 @@ Notes:
 - [x] rewrite ROI extraction notebook
 - [x] Readapat code to use centers instead of vendors
 - [x] Fix bug in training loop: one hot encoding
-- [ ] Watch pytorch tutorial
+
+Notes:
+* new train and prediction pipeline works but must be hypertuned for better results
+
+#### Tuesday
+- [x] Save file paths as csv file
+- [x] Improve preprocessing notebook
+- [x] Watch pytorch tutorial
+- [x] Improve and optimize the code
 - [ ] Write prediction function
 - [ ] Display loss function evolution: maybe log to wandb 
 
 Notes:
-* new train and prediction pipeline works but must be hypertuned for better results
+* reduction sum is better than mean
+* save file paths as csv to win time
+* Possible reason for difference in results: when do we apply the rescaling of intensity? on 4D data, 3D or 2D?
+* More epochs improved the results
 
 #### To do
 ##### Reading

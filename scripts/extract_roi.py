@@ -1,8 +1,7 @@
-from tqdm import tqdm
+from tqdm.auto import tqdm
 import torchio as tio
 import os
-from scripts.utils import load_metadata, get_subjects_files_paths
-from scripts.data import get_channel_index
+from scripts.utils import load_metadata, save_metadata
 
 
 def get_boundaries(data, heigth, width, padding_size):
@@ -18,22 +17,16 @@ def get_boundaries(data, heigth, width, padding_size):
     return h_init, h_fin, w_init, w_fin
 
 
-def extract_ROI(
-    data_dir, destination_dir, metadata_path=None, crop_size=128, padding_size=20
-):
-    metadata = load_metadata(metadata_path)
-    subjects_ids = metadata["External code"]
+def extract_ROI(destination_dir, crop_size=128, padding_size=20):
+    metadata = load_metadata()
+    subjects_ids = list(metadata.index)
 
-    subjects_ids, subject_images, subject_labels = get_subjects_files_paths(
-        data_dir, subject_ids=subjects_ids
-    )
     print("Start")
-    for subject_id, image_path, seg_path in tqdm(
-        zip(subjects_ids, subject_images, subject_labels)
-    ):
+    for subject_id in tqdm(subjects_ids):
         try:
-            ed_index = get_channel_index("ED", subject_id)
-            es_index = get_channel_index("ES", subject_id)
+            ed_index, es_index, image_path, seg_path = metadata.loc[
+                subject_id, ["ED", "ES", "Image_path", "Seg_path"]
+            ]
 
             image = tio.ScalarImage(image_path)
             seg = tio.LabelMap(seg_path)
@@ -62,7 +55,9 @@ def extract_ROI(
             seg.save(os.path.join(subject_dir, f"{subject_id}_sa_gt.nii.gz"))
 
         except:
-            print(subject_id, " cannot be loaded")
+            print(subject_id, " cannot be loaded and will be removed from metadata")
+            metadata = metadata.drop(subject_id)
+            save_metadata(metadata)
             continue
     print("Complete")
 

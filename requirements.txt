@@ -1,6 +1,4 @@
-torchio
 unet
-torchvision
 matplotlib
 numpy
 pandas
@@ -8,3 +6,5 @@ miseval
 seaborn
 black
 toml
+pytorch_lightning
+monai
