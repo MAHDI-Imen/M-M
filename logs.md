@@ -195,15 +195,21 @@ Notes:
 - [x] Improve preprocessing notebook
 - [x] Watch pytorch tutorial
 - [x] Improve and optimize the code
-- [ ] Write prediction function
-- [ ] Display loss function evolution: maybe log to wandb 
 
 Notes:
-* reduction sum is better than mean
 * save file paths as csv to win time
 * Possible reason for difference in results: when do we apply the rescaling of intensity? on 4D data, 3D or 2D?
 * More epochs improved the results
 
+#### Wednesday
+- [x] Display loss function evolution: maybe log to wandb / tensorboard*
+- [x] Fix bug in code: training loss stabilizes after a couple of epochs and won't improve
+- [ ] Write prediction function
+
+Notes:
+* Bug: Used softmax after crossentropy in training step --> vanishing gradient
+* Using 64 filters for the first layer and 4 encoding blocks also improved the results
+ 
 #### To do
 ##### Reading
 - [ ] Read Unet paper

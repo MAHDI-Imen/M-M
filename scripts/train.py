@@ -13,8 +13,8 @@ class LitUnet(pl.LightningModule):
             in_channels=1,
             out_classes=4,
             dimensions=2,
-            num_encoding_blocks=3,
-            out_channels_first_layer=32,
+            num_encoding_blocks=4,
+            out_channels_first_layer=64,
             normalization="batch",
             upsampling_type="conv",
             padding=True,
@@ -43,12 +43,11 @@ class LitUnet(pl.LightningModule):
         x, y = batch
 
         output = self(x)
-        probabilities = F.softmax(output, dim=1)
 
         y_one_hot = F.one_hot(y.long(), num_classes=4)
         y_one_hot = rearrange(y_one_hot, "b h w c -> b c h w").double()
 
-        loss = self.criterion(probabilities, y_one_hot)
+        loss = self.criterion(output, y_one_hot)
         return loss
 
     def configure_optimizers(self):
