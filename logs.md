@@ -204,6 +204,7 @@ Notes:
 #### Wednesday
 - [x] Display loss function evolution: maybe log to wandb / tensorboard*
 - [x] Fix bug in code: training loss stabilizes after a couple of epochs and won't improve
+- [x] Merge new project to main
 - [ ] Write prediction function
 
 Notes:
