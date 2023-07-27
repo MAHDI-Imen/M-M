@@ -25,8 +25,9 @@ def load_and_transform_images(paths, transform):
     return images
 
 
-def load_2D_data(centre, transform=None, target_transform=None):
-    metadata = load_metadata()
+def load_2D_data(centre, metadata=None, transform=None, target_transform=None):
+    if metadata is None:
+        metadata = load_metadata()
     subject_ids = list(metadata[metadata.Centre == centre].index)
 
     data_dir = "Data/M&Ms/OpenDataset"
@@ -49,10 +50,8 @@ def load_2D_data(centre, transform=None, target_transform=None):
 
 
 class Centre2DDataset(Dataset):
-    def __init__(
-        self, centre, transform=None, target_transform=None, load_transform=None
-    ):
-        self.images, self.labels = load_2D_data(centre=centre, transform=load_transform)
+    def __init__(self, centre, metadata, transform=None, target_transform=None):
+        self.images, self.labels = load_2D_data(centre=centre, metadata=metadata)
 
         self.transform = transform
         self.target_transform = target_transform

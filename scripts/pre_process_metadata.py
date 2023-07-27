@@ -3,7 +3,7 @@ import os
 from glob import glob
 import matplotlib.pyplot as plt
 
-from utils import load_metadata, save_metadata
+from scripts.utils import load_metadata, save_metadata
 
 from tqdm.auto import tqdm
 from monai.transforms import LoadImage
@@ -31,6 +31,8 @@ def extract_pix_dim(metadata):
         metadata.loc[subject_id, ["x_pixdim", "y_pixdim", "z_pixdim"]] = [
             pixdim.item() for pixdim in data.pixdim
         ]
+
+    save_metadata(metadata)
 
     return metadata
 
@@ -61,7 +63,7 @@ def save_subjects_files_paths(root_directory, metadata):
 
 
 def split_training_data(
-    metadata, train_ratio=0.8, vendor="A", centre=6, save=False, seed=42
+    metadata, train_ratio=0.8, vendor="A", train_centre=6, save=False, seed=42
 ):
     random.seed(seed)
     n_total = metadata.Vendor.value_counts()[vendor]
@@ -69,7 +71,7 @@ def split_training_data(
     indices = metadata.index[metadata["Vendor"] == vendor].tolist()
     train_indices = random.sample(indices, n_train)
 
-    metadata.loc[train_indices, "Centre"] = centre
+    metadata.loc[train_indices, "Centre"] = train_centre
 
     print(
         f"total number of samples: {n_total}, train samples: {n_train}, Validation: {n_total-n_train}"
@@ -80,8 +82,9 @@ def split_training_data(
     return metadata
 
 
-def pre_process_metadata():
-    root_directory = "Data_original/OpenDataset"
+def pre_process_metadata(root_directory=None):
+    if root_directory is None:
+        root_directory = "Data_original/OpenDataset"
 
     metadata = (
         load_metadata(
@@ -99,7 +102,7 @@ def pre_process_metadata():
     metadata = extract_pix_dim(metadata)
 
     metadata = split_training_data(
-        metadata, train_ratio=0.8, vendor="A", save=True, seed=42
+        metadata, train_ratio=0.8, vendor="A", save=False, seed=42
     )
 
     return metadata
