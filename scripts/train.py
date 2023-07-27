@@ -16,9 +16,10 @@ class CentreDataModule(pl.LightningDataModule):
         train_vendor=None,
         train_centre=6,
         val_centre=3,
-        split_ratio=0.8,
+        split_ratio=0.7,
         transform=None,
         target_transform=None,
+        load_transform=None,
         batch_size=8,
     ):
         super().__init__()
@@ -30,6 +31,7 @@ class CentreDataModule(pl.LightningDataModule):
 
         self.transform = transform
         self.target_transform = target_transform
+        self.load_transform = load_transform
 
         self.metadata = load_metadata()
         self.centres = self.metadata.Centre.unique()
@@ -54,14 +56,23 @@ class CentreDataModule(pl.LightningDataModule):
                     vendor=self.train_vendor,
                     train_centre=self.train_centre,
                     train_ratio=self.split_ratio,
+                    seed=2,
                 )
 
             self.train_dataset = Centre2DDataset(
-                self.train_centre, self.metadata, self.transform, self.target_transform
+                self.train_centre,
+                self.metadata,
+                self.transform,
+                self.target_transform,
+                load_transform=self.load_transform,
             )
 
             self.val_dataset = Centre2DDataset(
-                self.val_centre, self.metadata, self.transform, self.target_transform
+                self.val_centre,
+                self.metadata,
+                self.transform,
+                self.target_transform,
+                load_transform=self.load_transform,
             )
 
         # # Assign test dataset for use in dataloader(s)
@@ -92,7 +103,7 @@ class LitUnet(pl.LightningModule):
             out_classes=4,
             dimensions=2,
             num_encoding_blocks=4,
-            out_channels_first_layer=64,
+            out_channels_first_layer=32,
             normalization="batch",
             upsampling_type="conv",
             padding=True,

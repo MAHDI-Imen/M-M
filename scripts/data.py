@@ -50,8 +50,17 @@ def load_2D_data(centre, metadata=None, transform=None, target_transform=None):
 
 
 class Centre2DDataset(Dataset):
-    def __init__(self, centre, metadata, transform=None, target_transform=None):
-        self.images, self.labels = load_2D_data(centre=centre, metadata=metadata)
+    def __init__(
+        self,
+        centre,
+        metadata,
+        transform=None,
+        target_transform=None,
+        load_transform=None,
+    ):
+        self.images, self.labels = load_2D_data(
+            centre=centre, metadata=metadata, transform=load_transform
+        )
 
         self.transform = transform
         self.target_transform = target_transform
