@@ -1,11 +1,11 @@
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from monai.transforms import LoadImage
 from einops import rearrange, pack
 from tqdm.auto import tqdm
-
+from pytorch_lightning import LightningDataModule
 import os
-
 from scripts.utils import load_metadata
+from scripts.pre_process_metadata import split_training_data
 
 
 def load_image_as_2D_slices(image_path):
@@ -16,13 +16,13 @@ def load_image_as_2D_slices(image_path):
 
 def load_and_transform_images(paths, transform):
     images = []
-    for path in tqdm(paths):
+    for path in tqdm(paths, desc="Loading Images/Labels:", unit="File"):
         image = load_image_as_2D_slices(path)
         if transform:
             image = transform(image)
         images.append(image)
-    images, _ = pack(images, "* c h w")
-    return images
+    images, ps = pack(images, "* c h w")
+    return images, ps
 
 
 def load_2D_data(centre, metadata=None, transform=None, target_transform=None):
@@ -42,11 +42,13 @@ def load_2D_data(centre, metadata=None, transform=None, target_transform=None):
         for subject_id in subject_ids
     ]
 
-    images = load_and_transform_images(images_paths, transform)
-    labels = load_and_transform_images(labels_paths, target_transform)
+    images, subject_volume_sizes = load_and_transform_images(images_paths, transform)
+    labels, subject_volume_sizes = load_and_transform_images(
+        labels_paths, target_transform
+    )
     labels = rearrange(labels, "b 1 h w -> b h w")
 
-    return images, labels
+    return images, labels, subject_volume_sizes
 
 
 class Centre2DDataset(Dataset):
@@ -58,9 +60,11 @@ class Centre2DDataset(Dataset):
         target_transform=None,
         load_transform=None,
     ):
-        self.images, self.labels = load_2D_data(
+        self.images, self.labels, ps = load_2D_data(
             centre=centre, metadata=metadata, transform=load_transform
         )
+
+        self.subject_volume_sizes = [sizes[0] for sizes in ps]
 
         self.transform = transform
         self.target_transform = target_transform
@@ -78,6 +82,111 @@ class Centre2DDataset(Dataset):
             seg = self.target_transform(seg)
 
         return image, seg
+
+
+class CentreDataModule(LightningDataModule):
+    def __init__(
+        self,
+        train_vendor=None,
+        train_centre=6,
+        val_centre=3,
+        split_ratio=0.7,
+        transform=None,
+        target_transform=None,
+        load_transform=None,
+        batch_size=8,
+    ):
+        super().__init__()
+        self.train_vendor = train_vendor
+        self.split_ratio = split_ratio
+
+        self.train_centre = train_centre
+        self.val_centre = val_centre
+
+        self.transform = transform
+        self.target_transform = target_transform
+        self.load_transform = load_transform
+
+        self.metadata = load_metadata()
+        self.centres = list(self.metadata.Centre.unique())
+
+        self.batch_size = batch_size
+
+    # def prepare_data(self):
+    #   pre_process_metadata()
+    #   extract_ROI()
+
+    def setup(self, stage: str):
+        if stage == "fit":
+            if self.train_vendor:
+                self.train_centre = max(self.centres) + 1
+
+                self.val_centre = self.metadata.loc[
+                    self.metadata.Vendor == self.train_vendor, "Centre"
+                ][0]
+
+                self.centres.append(self.train_centre)
+
+                self.metadata = split_training_data(
+                    self.metadata,
+                    vendor=self.train_vendor,
+                    train_centre=self.train_centre,
+                    train_ratio=self.split_ratio,
+                    seed=2,
+                )
+
+            self.train_dataset = Centre2DDataset(
+                self.train_centre,
+                self.metadata,
+                self.transform,
+                self.target_transform,
+                load_transform=self.load_transform,
+            )
+
+            self.val_dataset = Centre2DDataset(
+                self.val_centre,
+                self.metadata,
+                load_transform=self.load_transform,
+            )
+
+        if stage == "test":
+            self.centres.sort()
+            self.test_datasets = [
+                Centre2DDataset(
+                    centre, self.metadata, load_transform=self.load_transform
+                )
+                for centre in self.centres
+            ]
+
+    def train_dataloader(self):
+        return DataLoader(
+            self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=4
+        )
+
+    def val_dataloader(self):
+        return DataLoader(
+            self.val_dataset,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=4,
+        )
+
+    def test_dataloader(self):
+        return [
+            DataLoader(
+                ds,
+                batch_sampler=self.batch_sampler(ds.subject_volume_sizes),
+                num_workers=4,
+            )
+            for ds in self.test_datasets
+        ]
+
+    def batch_sampler(self, subject_volume_sizes):
+        batch_sampler = [
+            [sum(subject_volume_sizes[:i]) + j for j in list(range(size))]
+            for i, size in enumerate(subject_volume_sizes)
+        ]
+        return batch_sampler
 
 
 def main():

@@ -1,109 +1,28 @@
-import torch.nn as nn
+from torch.nn import CrossEntropyLoss
 import torch.optim as optim
-import torch.nn.functional as F
+from torch.nn.functional import one_hot, softmax
 from unet import UNet
 import pytorch_lightning as pl
 from einops import rearrange
-from scripts.pre_process_metadata import split_training_data
-from scripts.utils import load_metadata
-from scripts.data import Centre2DDataset
-from torch.utils.data import DataLoader
-
-
-class CentreDataModule(pl.LightningDataModule):
-    def __init__(
-        self,
-        train_vendor=None,
-        train_centre=6,
-        val_centre=3,
-        split_ratio=0.7,
-        transform=None,
-        target_transform=None,
-        load_transform=None,
-        batch_size=8,
-    ):
-        super().__init__()
-        self.train_vendor = train_vendor
-        self.split_ratio = split_ratio
-
-        self.train_centre = train_centre
-        self.val_centre = val_centre
-
-        self.transform = transform
-        self.target_transform = target_transform
-        self.load_transform = load_transform
-
-        self.metadata = load_metadata()
-        self.centres = self.metadata.Centre.unique()
-
-        self.batch_size = batch_size
-
-    # def prepare_data(self):
-    #   pre_process_metadata()
-    #   extract_ROI()
-
-    def setup(self, stage: str):
-        # Assign train/val datasets for use in dataloaders
-        if stage == "fit":
-            if self.train_vendor:
-                self.train_centre = max(self.centres) + 1
-                self.val_centre = self.metadata.loc[
-                    self.metadata.Vendor == self.train_vendor, "Centre"
-                ][0]
-
-                self.metadata = split_training_data(
-                    self.metadata,
-                    vendor=self.train_vendor,
-                    train_centre=self.train_centre,
-                    train_ratio=self.split_ratio,
-                    seed=2,
-                )
-
-            self.train_dataset = Centre2DDataset(
-                self.train_centre,
-                self.metadata,
-                self.transform,
-                self.target_transform,
-                load_transform=self.load_transform,
-            )
-
-            self.val_dataset = Centre2DDataset(
-                self.val_centre,
-                self.metadata,
-                self.transform,
-                self.target_transform,
-                load_transform=self.load_transform,
-            )
-
-        # # Assign test dataset for use in dataloader(s)
-        # if stage == "test":
-        #     self.mnist_test = MNIST(
-        #         self.data_dir, train=False, transform=self.transform
-        #     )
-
-    def train_dataloader(self):
-        return DataLoader(
-            self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=4
-        )
-
-    def val_dataloader(self):
-        return DataLoader(
-            self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=4
-        )
-
-    # def test_dataloader(self):
-    #     return DataLoader(self.mnist_test, batch_size=32)
+from torch import argmax
+import pytorch_lightning.loggers as pl_loggers
+import matplotlib.pyplot as plt
 
 
 class LitUnet(pl.LightningModule):
-    def __init__(self, lr=1e-3):
+    def __init__(
+        self,
+        lr=1e-3,
+        num_encoding_blocks=4,
+        out_channels_first_layer=32,
+    ):
         super(LitUnet, self).__init__()
         self.Unet = UNet(
             in_channels=1,
             out_classes=4,
             dimensions=2,
-            num_encoding_blocks=4,
-            out_channels_first_layer=32,
+            num_encoding_blocks=num_encoding_blocks,
+            out_channels_first_layer=out_channels_first_layer,
             normalization="batch",
             upsampling_type="conv",
             padding=True,
@@ -112,7 +31,8 @@ class LitUnet(pl.LightningModule):
 
         self.lr = lr
 
-        self.criterion = nn.CrossEntropyLoss(reduction="mean")
+        self.criterion = CrossEntropyLoss(reduction="mean")
+
         self.save_hyperparameters()
 
     def forward(self, x):
@@ -129,19 +49,75 @@ class LitUnet(pl.LightningModule):
         self.log("val_loss", loss, prog_bar=True, on_epoch=True, on_step=False)
         return loss
 
+    def test_step(self, batch, batch_idx, dataloader_idx):
+        x, y = batch
+        output = self(x)
+        prob = softmax(output, dim=1)
+        y_pred = argmax(prob, dim=1)
+        loss = self._commun_step(batch)
+        self.log(
+            "test_loss",
+            loss,
+            prog_bar=True,
+            on_epoch=True,
+            on_step=False,
+        )
+        if batch_idx % 10:
+            self.log_tb_images(x, y, y_pred, batch_idx, dataloader_idx)
+
+        return loss
+
     def _commun_step(self, batch):
         x, y = batch
 
         output = self(x)
 
-        y_one_hot = F.one_hot(y.long(), num_classes=4)
+        y_one_hot = one_hot(y.long(), num_classes=4)
         y_one_hot = rearrange(y_one_hot, "b h w c -> b c h w").double()
 
         loss = self.criterion(output, y_one_hot)
         return loss
 
+    def log_tb_images(self, images, labels, predictions, batch_idx, dataloader_idx):
+        tb_logger = None
+        for logger in self.trainer.loggers:
+            if isinstance(logger, pl_loggers.TensorBoardLogger):
+                tb_logger = logger.experiment
+                break
+
+        if tb_logger is None:
+            raise ValueError("TensorBoard Logger not found")
+        fig = create_figure(images, labels, predictions)
+        tb_logger.add_figure(f"Centre_{dataloader_idx}_Results", fig, batch_idx)
+
     def configure_optimizers(self):
         return optim.AdamW(self.parameters(), lr=self.lr)
+
+
+def display_subplot(data, title, ax, cmap="gray"):
+    ax.imshow(data, cmap=cmap)
+    ax.set_title(title)
+    ax.axis("off")
+
+
+def create_figure(images, labels, predictions):
+    fig, axes = plt.subplots(3, 1, figsize=(len(images), 5))
+    fig.suptitle(f"Image Predictions and Ground Truth", fontsize=16)
+
+    display_subplot(rearrange(images.cpu(), "b c h w -> h (b w) c"), "Images", axes[0])
+    display_subplot(
+        rearrange(labels.cpu(), "b h w -> h (b w)"),
+        "Ground Truth",
+        axes[1],
+        cmap="viridis",
+    )
+    display_subplot(
+        rearrange(predictions.cpu(), "b h w -> h (b w)"),
+        "Predictions",
+        axes[2],
+        cmap="viridis",
+    )
+    return fig
 
 
 def main():

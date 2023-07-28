@@ -22,7 +22,7 @@ def extract_ROI(destination_dir, crop_size=128, padding_size=20):
     subjects_ids = list(metadata.index)
 
     print("Start")
-    for subject_id in tqdm(subjects_ids):
+    for subject_id in tqdm(subjects_ids, desc="Extracting ROI:", unit="subject"):
         try:
             ed_index, es_index, image_path, seg_path = metadata.loc[
                 subject_id, ["ED", "ES", "Image_path", "Seg_path"]
