@@ -5,6 +5,35 @@ from scripts.utils import load_metadata, save_metadata
 
 
 def get_boundaries(data, heigth, width, padding_size):
+    """
+    Get the boundaries of the ROI. The boundaries are computed
+    as a centered box around the segmentation mask mask with a
+    symetrical padding of the specified size.
+
+    Parameters
+    ----------
+    data : torch.Tensor
+        Tensor containing the segmentation.
+    heigth : int
+        Heigth of the segmentation.
+    width : int
+        Width of the segmentation.
+    padding_size : int
+        Size of the padding.
+
+    Returns
+    -------
+    h_init : int
+        Start of the ROI in the height dimensio,.
+    h_fin : int
+        End of the ROI in the height dimension.
+    w_init : int
+        Start of the ROI in the width dimension.
+    w_fin : int
+        End of the ROI in the width dimension.
+
+    """
+
     nonzero_indices = data.nonzero(as_tuple=False)
     min_boundaries = nonzero_indices.min(axis=0).values[1:-1]
     max_boundaries = nonzero_indices.max(axis=0).values[1:-1]
@@ -18,6 +47,23 @@ def get_boundaries(data, heigth, width, padding_size):
 
 
 def extract_ROI(destination_dir, crop_size=128, padding_size=20):
+    """
+    Extract the region of interest (ROI) from the images and segmentations
+    and save them in the destination_dir.
+
+    Parameters
+    ----------
+    destination_dir : str
+        Path to the directory where the ROI will be saved.
+    crop_size : int, optional
+        Size of the ROI. The default is 128.
+    padding_size : int, optional
+        Size of the padding. The default is 20.
+
+    Returns
+    -------
+    None.
+    """
     metadata = load_metadata()
     subjects_ids = list(metadata.index)
 
@@ -63,7 +109,9 @@ def extract_ROI(destination_dir, crop_size=128, padding_size=20):
 
 
 def main():
-    return 0
+    destination_dir = "Data/M&Ms/OpenDataset/"
+
+    extract_ROI(destination_dir, crop_size=128, padding_size=30)
 
 
 if __name__ == "__main__":

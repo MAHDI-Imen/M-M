@@ -16,7 +16,7 @@ def load_image_as_2D_slices(image_path):
 
 def load_and_transform_images(paths, transform):
     images = []
-    for path in tqdm(paths, desc="Loading Images/Labels:", unit="File"):
+    for path in tqdm(paths, unit="File"):
         image = load_image_as_2D_slices(path)
         if transform:
             image = transform(image)
@@ -32,11 +32,13 @@ def load_2D_data(centre, metadata=None, transform=None, target_transform=None):
 
     data_dir = "Data/M&Ms/OpenDataset"
 
+    print("Loading Images for centre: ", centre)
     images_paths = [
         os.path.join(data_dir, subject_id, f"{subject_id}_sa.nii.gz")
         for subject_id in subject_ids
     ]
 
+    print("Loading Labels for centre: ", centre)
     labels_paths = [
         os.path.join(data_dir, subject_id, f"{subject_id}_sa_gt.nii.gz")
         for subject_id in subject_ids
@@ -112,6 +114,8 @@ class CentreDataModule(LightningDataModule):
 
         self.batch_size = batch_size
 
+        self.test_datasets = None
+
     # def prepare_data(self):
     #   pre_process_metadata()
     #   extract_ROI()
@@ -119,7 +123,7 @@ class CentreDataModule(LightningDataModule):
     def setup(self, stage: str):
         if stage == "fit":
             if self.train_vendor:
-                self.train_centre = max(self.centres) + 1
+                self.train_centre = 0
 
                 self.val_centre = self.metadata.loc[
                     self.metadata.Vendor == self.train_vendor, "Centre"
@@ -134,7 +138,6 @@ class CentreDataModule(LightningDataModule):
                     train_ratio=self.split_ratio,
                     seed=2,
                 )
-
             self.train_dataset = Centre2DDataset(
                 self.train_centre,
                 self.metadata,
@@ -151,12 +154,14 @@ class CentreDataModule(LightningDataModule):
 
         if stage == "test":
             self.centres.sort()
-            self.test_datasets = [
-                Centre2DDataset(
-                    centre, self.metadata, load_transform=self.load_transform
-                )
-                for centre in self.centres
-            ]
+
+            if self.test_datasets is None:
+                self.test_datasets = [
+                    Centre2DDataset(
+                        centre, self.metadata, load_transform=self.load_transform
+                    )
+                    for centre in self.centres
+                ]
 
     def train_dataloader(self):
         return DataLoader(
