@@ -10,6 +10,16 @@ from monai.transforms import LoadImage
 
 
 def extract_pix_dim(metadata):
+    """
+    Extract pix_dim from the images and save it to the metadata file
+
+    Args:
+        metadata (pd.DataFrame): metadata file
+
+    Returns:
+        metadata (pd.DataFrame): metadata file with pix_dim
+
+    """
     metadata = metadata.assign(
         time_dim=None, x_dim=None, y_dim=None, z_dim=None
     ).assign(x_pixdim=None, y_pixdim=None, z_pixdim=None)
@@ -38,6 +48,17 @@ def extract_pix_dim(metadata):
 
 
 def save_subjects_files_paths(root_directory, metadata):
+    """
+    Extract the paths of the images and segmentations and save them in the metadata file.
+
+    Args:
+        root_directory (str): path to the root directory of the dataset
+        metadata (pd.DataFrame): metadata file
+
+    Returns:
+        metadata (pd.DataFrame): metadata file with paths
+
+    """
     metadata = metadata.assign(Image_path=None, Seg_path=None)
 
     subject_ids = list(metadata.index)
@@ -63,8 +84,22 @@ def save_subjects_files_paths(root_directory, metadata):
 
 
 def split_training_data(
-    metadata, train_ratio=0.8, vendor="A", train_centre=6, save=False, seed=42
+    metadata, train_ratio=0.8, vendor="A", train_centre=0, save=False, seed=42
 ):
+    """
+    Split the training data of one vendor into train and validation sets.
+
+    Args:
+        metadata (pd.DataFrame): metadata file
+        train_ratio (float): ratio of training data
+        vendor (str): vendor name
+        train_centre (int): new centre number for the training data
+        save (bool): whether or not to save the metadata file
+        seed (int): random seed
+
+    Returns:
+        metadata (pd.DataFrame): updated metadata file
+    """
     random.seed(seed)
     n_total = metadata.Vendor.value_counts()[vendor]
     n_train = int(n_total * train_ratio)
@@ -110,7 +145,16 @@ def pre_process_metadata(root_directory=None):
 
 def plot_vendor_stats(vendor, column, kind):
     """
-    Example: plot_vendor_stats("B", "x_pixdim", "hist")
+    Plot the distribution of a column for a given vendor.
+
+    Args:
+
+        vendor (str): vendor name (A, B, C, D)
+        column (str): column name
+        kind (str): type of plot (hist, pie)
+
+    Example:
+        >>> plot_vendor_stats("A", "x_pixdim", "hist")
     """
     metadata = load_metadata()
 
