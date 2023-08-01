@@ -1,7 +1,7 @@
 from tqdm.auto import tqdm
 import torchio as tio
 import os
-from scripts.utils import load_metadata, save_metadata
+from utils import load_metadata, save_metadata
 
 
 def get_boundaries(data, heigth, width, padding_size):

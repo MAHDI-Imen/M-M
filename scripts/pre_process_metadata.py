@@ -3,7 +3,7 @@ import os
 from glob import glob
 import matplotlib.pyplot as plt
 
-from scripts.utils import load_metadata, save_metadata
+from utils import load_metadata, save_metadata
 
 from tqdm.auto import tqdm
 from monai.transforms import LoadImage

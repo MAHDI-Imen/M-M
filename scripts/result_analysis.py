@@ -44,7 +44,7 @@ def save_results(model_name, show_results=False):
 
     if show_results:
         plt.show()
-    return grouped_by_vendor
+    return fig
 
 
 def main():

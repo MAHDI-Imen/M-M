@@ -8,9 +8,12 @@ lightning_logs/
 .vscode/snippets.code-snippets
 
 scripts/__pycache__/
+*.pyc
 
 M-M/
 
 wandb/
 
 debug-cli.mahdi-22.log
+
+*.json

@@ -2,19 +2,23 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning import seed_everything
-from scripts.train import LitUnet
-from scripts.data import CentreDataModule
-from monai.transforms import ScaleIntensity
+from train import LitUnet
+from data import CentreDataModule
 
-from scripts.config import *
-from scripts.result_analysis import save_results
+from result_analysis import save_results
 import importlib
+import os
 
 import wandb
 
+import argparse
 
-def pipeline(config_name="scripts.config"):
+
+def pipeline(config_name="config.config"):
     config = importlib.import_module(config_name)
+
+    if not os.path.exists(f"models/{config.MODEL_NAME}"):
+        os.mkdir(f"models/{config.MODEL_NAME}")
 
     seed_everything(config.SEED)
 
@@ -24,14 +28,11 @@ def pipeline(config_name="scripts.config"):
 
     model = LitUnet(model_name=config.MODEL_NAME, lr=config.LEARNING_RATE)
 
-    transform = ScaleIntensity(minv=0.0, maxv=1.0, channel_wise=True)
-
     dm = CentreDataModule(
         config.TRAINING_VENDOR,
         split_ratio=config.SPLIT_RATIO,
-        load_transform=transform,
+        load_transform=config.TRANSFORM,
         batch_size=config.BATCH_SIZE,
-        fast_dev_run=config.FAST_DEV_RUN,
     )
 
     trainer = pl.Trainer(
@@ -41,15 +42,18 @@ def pipeline(config_name="scripts.config"):
         log_every_n_steps=1,
         enable_model_summary=False,
         callbacks=[EarlyStopping("val_loss", patience=2)],
+        fast_dev_run=config.FAST_DEV_RUN,
     )
 
     trainer.fit(model, datamodule=dm)
 
     trainer.save_checkpoint(f"models/{config.MODEL_NAME}/{config.MODEL_NAME}.ckpt")
 
-    trainer.test(model, ckpt_path="best", datamodule=dm)
+    results = trainer.test(model, ckpt_path="best", datamodule=dm)
 
-    results = save_results(config.MODEL_NAME)
+    fig = save_results(config.MODEL_NAME)
+
+    wandb_logger.experiment.log({f"Results/{config.MODEL_NAME}": wandb.Image(fig)})
 
     wandb.finish()
 
@@ -57,7 +61,18 @@ def pipeline(config_name="scripts.config"):
 
 
 def main():
-    pipeline()
+    parser = argparse.ArgumentParser(description="Run pipeline")
+    parser.add_argument(
+        "-c",
+        "--config_file",
+        type=str,
+        help="config file name",
+        default="config",
+    )
+
+    args = parser.parse_args()
+
+    pipeline(args.config_file)
 
 
 if __name__ == "__main__":

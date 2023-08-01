@@ -8,7 +8,7 @@ from torch import argmax
 import pytorch_lightning.loggers as pl_loggers
 import pandas as pd
 
-from scripts.metrics import get_metric_scores
+from metrics import get_metric_scores
 import wandb
 
 
@@ -36,8 +36,6 @@ class LitUnet(pl.LightningModule):
         self.lr = lr
         self.model_name = model_name
         self.criterion = CrossEntropyLoss(reduction="mean")
-
-        self.save_hyperparameters()
 
     def forward(self, x):
         output = self.Unet(x)
@@ -103,8 +101,11 @@ class LitUnet(pl.LightningModule):
         return loss
 
     def on_test_end(self):
-        self.wandb_logger.log({f"Results": self.table})
+        self.wandb_logger.log({self.model_name: self.table})
         results = self._save_results()
+
+        self.save_hyperparameters()
+
         return results
 
     def _commun_step(self, batch):

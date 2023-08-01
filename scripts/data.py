@@ -4,8 +4,8 @@ from einops import rearrange, pack
 from tqdm.auto import tqdm
 from pytorch_lightning import LightningDataModule
 import os
-from scripts.utils import load_metadata
-from scripts.pre_process_metadata import split_training_data
+from utils import load_metadata
+from pre_process_metadata import split_training_data
 
 
 def load_image_as_2D_slices(image_path):

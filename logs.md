@@ -240,16 +240,21 @@ Notes:
 - [x] Save results and visualize them
 - [x] Save figures to tensorboard
 - [x] Log in to wandb
+- [x] Verify the code for 3D in miseval: verify input format
 
 Notes:
 * To login to wandb I had to change environement variables to writable directories: WANDB_DIR and TMPDIR
+* Miseval works differently for 3D vs 2D, however it gives the same result for C H W and H W C
 
 #### Tuesday
 - [x] Add wandb logger
 - [x] Log images to wandb
 - [x] Log metrics to wandb and visualize them
-- [ ] Write config file with augmenations to be performed and add them to the pipeline
-- [ ] Test project
+- [x] Write config file with augmenations to be performed and add them to the pipeline
+- [x] Test project
+- [x] Automate the pipeline to automatically read config file and run the project and save results for each model
+- [x] Time each run and the experiment
+
 
 
 
@@ -263,7 +268,6 @@ Notes:
 ##### Priorities
 - [ ] Auto DocString Extension 
 - [ ] Resampling uniform voxel spacing=1.25 : the whole image
-- [ ] Verify the code for 3D in miseval: verify input format
 
 
 ##### Next steps
