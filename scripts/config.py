@@ -1,0 +1,16 @@
+# Training
+MODEL_NAME = "benchmark"
+LEARNING_RATE = 1e-3
+NUM_EPOCHS = 20
+NUM_WORKERS = 8
+SEED = 42
+FAST_DEV_RUN = True
+
+# DataModule
+TRAINING_VENDOR = "A"
+SPLIT_RATIO = 0.7
+BATCH_SIZE = 8
+
+# WANDB
+PROJECT_NAME = "M-M"
+ENTITY = "imen-mahdi"

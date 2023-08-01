@@ -203,36 +203,56 @@ Notes:
 * Possible reason for difference in results: when do we apply the rescaling of intensity? on 4D data, 3D or 2D?
 * More epochs improved the results
 
-#### Wednesday
+#### Wednesday + Thursday + Friday
 - [x] Display loss function evolution: maybe log to wandb / tensorboard*
 - [x] Fix bug in code: training loss stabilizes after a couple of epochs and won't improve
 - [x] Merge new project to main
-- [ ] Look into pytorch lightning source code to understand the structure
-    - [ ] Trainer
-    - [ ] lightningModule
-    - [ ] DataModule
-- [ ] Design and implement the new pl pipeline
-    - [ ] Include torchmetrics and import Dice and JaccardIndex, add them to logger 
-    - [ ] Include predict step in pl class
-    - [ ] Convert Dataloaders to pl.Datamodule and add test, train and val dataloaders 
-    - [ ] Add other centers as test sets and add test step, I can calculate test loss for each center and log them
-    - [ ] Modify pre-process metadata to not save the results and perform the splitting in the pl model module 
-    - [ ] Generalize the pl model to take any center and split it to train and val sets and take the rest as test centers (add option include val to add val to the test)
+- [x] Look into pytorch lightning source code to understand the structure
+    - [x] Trainer
+    - [x] lightningModule
+    - [x] DataModule
+- [x] Design and implement the new pl pipeline
+    - [x] Include torchmetrics and import Dice and JaccardIndex, add them to logger 
+    - [x] Include test step in pl class
+    - [x] Convert Dataloaders to pl.Datamodule and add test, train and val dataloaders 
+    - [x] Add other centers as test sets and add test step, I can calculate test loss for each center and log them
+    - [x] Modify pre-process metadata to not save the results and perform the splitting in the pl model module 
+    - [x] Generalize the pl model to take any center and split it to train and val sets and take the rest as test centers (add option include val to add val to the test)
     - [ ] custom metrics for 3D if needed
-    - [ ] Restructure code into train.py, data.py, config.py, model.py , callbacks, metrics.py(if custom)
-    - [ ] Add callbacks: early stopping , add personalized callback to show a batch of predicted images with their gt
+    - [x] Restructure code into train.py, data.py, config.py, model.py , callbacks, metrics.py(if custom)
+    - [x] Add callbacks: early stopping , add personalized callback to show a batch of predicted images with their gt
     - [ ] Add wandb logger
-    - [ ] Add tensorboard logger: log images to view them during training
+    - [x] Add tensorboard logger: log images to view them during training
     - [ ] possibly use pytorch profiler 
 
-- [ ] freeze requirements
-- [ ] Learn the difference between inference_mode and zero_grad
+- [x] freeze requirements
+- [x] Learn the difference between inference_mode and zero_grad
 
 Notes:
 * Bug: Used softmax after crossentropy in training step --> vanishing gradient
 * Using 64 filters for the first layer and 4 encoding blocks also improved the results
 * The test step will predict on each subject volume data while the train and validation will work on 2D
  
+## Week 5
+### Tasks
+#### Monday
+- [x] Restore files from git
+- [x] Save results and visualize them
+- [x] Save figures to tensorboard
+- [x] Log in to wandb
+
+Notes:
+* To login to wandb I had to change environement variables to writable directories: WANDB_DIR and TMPDIR
+
+#### Tuesday
+- [x] Add wandb logger
+- [x] Log images to wandb
+- [x] Log metrics to wandb and visualize them
+- [ ] Write config file with augmenations to be performed and add them to the pipeline
+- [ ] Test project
+
+
+
 #### To do
 ##### Reading
 - [ ] Read Unet paper

@@ -6,15 +6,16 @@ import pytorch_lightning as pl
 from einops import rearrange
 from torch import argmax
 import pytorch_lightning.loggers as pl_loggers
-import matplotlib.pyplot as plt
 import pandas as pd
 
-from miseval import evaluate
+from scripts.metrics import get_metric_scores
+import wandb
 
 
 class LitUnet(pl.LightningModule):
     def __init__(
         self,
+        model_name="Unet",
         lr=1e-3,
         num_encoding_blocks=4,
         out_channels_first_layer=32,
@@ -33,7 +34,7 @@ class LitUnet(pl.LightningModule):
         )
 
         self.lr = lr
-
+        self.model_name = model_name
         self.criterion = CrossEntropyLoss(reduction="mean")
 
         self.save_hyperparameters()
@@ -41,6 +42,16 @@ class LitUnet(pl.LightningModule):
     def forward(self, x):
         output = self.Unet(x)
         return output
+
+    def training_step(self, batch, batch_idx):
+        loss = self._commun_step(batch)
+        self.log("train_loss", loss, prog_bar=True, on_epoch=True, on_step=False)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        loss = self._commun_step(batch)
+        self.log("val_loss", loss, prog_bar=True, on_epoch=True, on_step=False)
+        return loss
 
     def on_test_start(self):
         self.results = pd.DataFrame(columns=["Centre", "subject_idx"])
@@ -67,43 +78,34 @@ class LitUnet(pl.LightningModule):
             IoU_RV_ES=None,
         )
 
-    def on_test_end(self):
-        self.results.iloc[:, :2] = self.results.iloc[:, :2].astype(int)
-        self.results.to_csv("results.csv", index=False)
+        self.wandb_logger = None
+        for logger in self.trainer.loggers:
+            if isinstance(logger, pl_loggers.WandbLogger):
+                self.wandb_logger = logger.experiment
+                break
 
-    def training_step(self, batch, batch_idx):
-        loss = self._commun_step(batch)
-        self.log("train_loss", loss, prog_bar=True, on_epoch=True, on_step=False)
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        loss = self._commun_step(batch)
-        self.log("val_loss", loss, prog_bar=True, on_epoch=True, on_step=False)
-        return loss
+        self.table = wandb.Table(columns=["Centre", "SubjectID", "Slice", "Image"])
 
     def test_step(self, batch, batch_idx, dataloader_idx):
         centre = dataloader_idx
         x, y = batch
-        y_pred = self.get_predictions(x)
+        y_pred = self._get_predictions(x)
 
-        n_slices = y.shape[0] // 2
+        scores = get_metric_scores(y, y_pred)
+        self.results.loc[len(self.results)] = [centre, batch_idx] + scores
 
-        ed_labels, ed_predictions = y[:n_slices], y_pred[:n_slices]
-        es_labels, es_predictions = y[n_slices:], y_pred[n_slices:]
-
-        ED_scores = get_scores(ed_labels, ed_predictions)
-        ES_scores = get_scores(es_labels, es_predictions)
-
-        self.results.loc[len(self.results)] = (
-            [centre, batch_idx] + ED_scores + ES_scores
-        )
-        if batch_idx % 10:
-            self.log_tb_example(x, y, y_pred, batch_idx, centre)
+        if batch_idx == 1:
+            self._log_to_wandb(x, y, y_pred, centre, batch_idx)
 
         loss = self._commun_step(batch)
         self.log("test_loss", loss, prog_bar=True, on_epoch=True, on_step=False)
 
         return loss
+
+    def on_test_end(self):
+        self.wandb_logger.log({f"Results": self.table})
+        results = self._save_results()
+        return results
 
     def _commun_step(self, batch):
         x, y = batch
@@ -113,62 +115,47 @@ class LitUnet(pl.LightningModule):
         loss = self.criterion(output, y_one_hot)
         return loss
 
-    def get_predictions(self, x):
+    def _save_results(self):
+        metadata = self.trainer.datamodule.metadata.sort_values(
+            by=["Centre", "SubjectID"]
+        )
+        self.results = self.results.set_index(metadata.index)
+
+        self.results["Centre"] = self.results.iloc[:, 0].astype(int)
+
+        self.results = self.results.drop(columns=["subject_idx"])
+
+        self.results.to_csv(f"models/{self.model_name}/results.csv", index=True)
+        return self.results
+
+    def _get_predictions(self, x):
         output = self(x)
         prob = softmax(output, dim=1)
         y_pred = argmax(prob, dim=1)
         return y_pred
 
-    def log_tb_example(self, images, labels, predictions, batch_idx, centre):
-        tb_logger = None
-        for logger in self.trainer.loggers:
-            if isinstance(logger, pl_loggers.TensorBoardLogger):
-                tb_logger = logger.experiment
-                break
+    def _log_to_wandb(self, images, labels, predictions, centre, batch_idx):
+        class_labels = {1: "LV", 2: "MYO", 3: "RV"}
 
-        if tb_logger is None:
-            raise ValueError("TensorBoard Logger not found")
-        fig = create_figure(images, labels, predictions)
-        tb_logger.add_figure(f"Centre_{centre}_Results", fig, batch_idx)
+        for slice, (img, label, pred) in enumerate(zip(images, labels, predictions)):
+            mask_img = wandb.Image(
+                img.cpu(),
+                masks={
+                    "prediction": {
+                        "mask_data": pred.cpu(),
+                        "class_labels": class_labels,
+                    },
+                    "groung truth": {
+                        "mask_data": label.cpu(),
+                        "class_labels": class_labels,
+                    },
+                },
+            )
+
+            self.table.add_data(centre, batch_idx, slice, mask_img)
 
     def configure_optimizers(self):
         return optim.AdamW(self.parameters(), lr=self.lr)
-
-
-def get_scores(y, y_pred):
-    dice_scores = evaluate(y, y_pred, metric="Dice", multiclass=True, n_classes=4)
-    IoU_scores = evaluate(y, y_pred, metric="IoU", multiclass=True, n_classes=4)
-    return list(dice_scores) + list(IoU_scores)
-
-
-def display_subplot(data, title, ax, cmap="gray"):
-    ax.imshow(data, cmap=cmap)
-    ax.set_title(title)
-    ax.axis("off")
-
-
-def create_figure(images, labels, predictions):
-    fig, axes = plt.subplots(3, 1, figsize=(len(images), 5))
-    fig.suptitle(f"Image Predictions and Ground Truth", fontsize=16)
-
-    display_subplot(
-        rearrange(images.cpu(), "(b1 b2) c h w -> (b1 h) (b2 w) c", b1=2),
-        "Images",
-        axes[0],
-    )
-    display_subplot(
-        rearrange(labels.cpu(), "(b1 b2) h w -> (b1 h) (b2 w)", b1=2),
-        "Ground Truth",
-        axes[1],
-        cmap="viridis",
-    )
-    display_subplot(
-        rearrange(predictions.cpu(), "(b1 b2) h w -> (b1 h) (b2 w)", b1=2),
-        "Predictions",
-        axes[2],
-        cmap="viridis",
-    )
-    return fig
 
 
 def main():
