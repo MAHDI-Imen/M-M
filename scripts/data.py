@@ -4,8 +4,16 @@ from einops import rearrange, pack
 from tqdm.auto import tqdm
 from pytorch_lightning import LightningDataModule
 import os
-from utils import load_metadata
-from pre_process_metadata import split_training_data
+
+try:
+    from utils import load_metadata
+except ModuleNotFoundError:
+    from scripts.utils import load_metadata
+
+try:
+    from pre_process_metadata import split_training_data
+except ModuleNotFoundError:
+    from scripts.pre_process_metadata import split_training_data
 
 
 def load_image_as_2D_slices(image_path):
@@ -14,7 +22,7 @@ def load_image_as_2D_slices(image_path):
     return slices
 
 
-def load_and_transform_images(paths, transform):
+def load_and_transform_images(paths, transform=None):
     images = []
     for path in tqdm(paths, unit="File"):
         image = load_image_as_2D_slices(path)
@@ -25,7 +33,7 @@ def load_and_transform_images(paths, transform):
     return images, ps
 
 
-def load_2D_data(centre, metadata=None, transform=None, target_transform=None):
+def load_2D_data(centre, metadata=None, transform=None):
     if metadata is None:
         metadata = load_metadata()
     subject_ids = list(metadata[metadata.Centre == centre].index)
@@ -45,10 +53,7 @@ def load_2D_data(centre, metadata=None, transform=None, target_transform=None):
     ]
 
     images, subject_volume_sizes = load_and_transform_images(images_paths, transform)
-    labels, subject_volume_sizes = load_and_transform_images(
-        labels_paths, target_transform
-    )
-    labels = rearrange(labels, "b 1 h w -> b h w")
+    labels, subject_volume_sizes = load_and_transform_images(labels_paths)
 
     return images, labels, subject_volume_sizes
 
@@ -59,7 +64,6 @@ class Centre2DDataset(Dataset):
         centre,
         metadata,
         transform=None,
-        target_transform=None,
         load_transform=None,
     ):
         self.images, self.labels, ps = load_2D_data(
@@ -69,7 +73,6 @@ class Centre2DDataset(Dataset):
         self.subject_volume_sizes = [sizes[0] for sizes in ps]
 
         self.transform = transform
-        self.target_transform = target_transform
 
     def __len__(self):
         return len(self.images)
@@ -78,10 +81,14 @@ class Centre2DDataset(Dataset):
         image = self.images[index]
         seg = self.labels[index]
 
+        fn_keys = {"img": image, "seg": seg}
+
         if self.transform:
-            image = self.transform(image)
-        if self.target_transform:
-            seg = self.target_transform(seg)
+            transformed_dict = self.transform(fn_keys)
+            image = transformed_dict["img"]
+            seg = transformed_dict["seg"]
+
+        seg = seg[0]  # to remove the channel dimension
 
         return image, seg
 

@@ -31,7 +31,7 @@ def pipeline(config_name="config.config"):
     dm = CentreDataModule(
         config.TRAINING_VENDOR,
         split_ratio=config.SPLIT_RATIO,
-        load_transform=config.TRANSFORM,
+        load_transform=config.LOAD_TRANSFORM,
         batch_size=config.BATCH_SIZE,
     )
 
