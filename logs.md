@@ -256,10 +256,23 @@ Notes:
 - [x] Time each run and the experiment
 
 
+#### Rest of the week
+Vacation
+
+## Week 6
+### Tasks
+#### Monday
+vacation
+
+#### Tuesday
+- [x] Modify the dataloader, dataset to adapt to dict augmentations
+- [x] Test out spatial augmentations: spatial((rotation(composed of big and small rotation), crop), flip, elastic)
+- [x] Test out intensity augmentations: Intensity(Blur, Gaussian noise, gamma augmentation, Brightness)
+- [x] Test out both augmentations
+
 #### Wednesday
-- [ ] Test out spatial augmentations: spatial((rotation(composed of big and small rotation), crop), flip, elastic)
-- [ ] Test out intensity augmentations: Intensity(Blur, Gaussian noise, gamma augmentation, Brightness)
-- [ ] Test out both augmentations 
+- [ ] Visualize examples during training with augmented images
+- [ ] Test out different augmentations during training 
 
 
 
