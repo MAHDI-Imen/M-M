@@ -256,6 +256,11 @@ Notes:
 - [x] Time each run and the experiment
 
 
+#### Wednesday
+- [ ] Test out spatial augmentations: spatial((rotation(composed of big and small rotation), crop), flip, elastic)
+- [ ] Test out intensity augmentations: Intensity(Blur, Gaussian noise, gamma augmentation, Brightness)
+- [ ] Test out both augmentations 
+
 
 
 #### To do
@@ -272,11 +277,29 @@ Notes:
 
 ##### Next steps
 - [ ] Try training on 3D volume
-- [ ] Apply augmentations : spatial((rotation(composed of big and small rotation), crop), flip, elastic): one at a time and then together. Intensity(Blur, Gaussian noise, gamma augmentation, Brightness) : Make this as a pipeline
 
 - [ ] Test time augmentation
 
 - [ ] Contrastive learning for automatic augmentation
 
 ##### If I have extra time
-- [ ] Add Histogram and vendor partition to utils.visualization
+- [ ] Try to use the whole image instead of the ROI
+- [ ] Auto extract ROI
+
+llefolgo
+
+gamma in between 0.7 and 1.5
+
+#### Config file
+- [ ] spatial without elastic
+- [ ] intensity
+- [ ] spatial + intensity
+- [ ] spatial + elastic
+
+flip and scale, rotation 90, 180 deg always
++ rotation 30 deg + translate
++ elastic
++ gaussian noise always
++ bias field, adjust contrast(gamma)
+
+

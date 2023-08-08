@@ -18,4 +18,4 @@ PROJECT_NAME = "M-M"
 ENTITY = "imen-mahdi"
 
 # Transforms
-TRANSFORM = ScaleIntensity(minv=0.0, maxv=1.0, channel_wise=True)
+LOAD_TRANSFORM = ScaleIntensity(minv=0.0, maxv=1.0, channel_wise=True)
