@@ -274,7 +274,8 @@ vacation
 - [ ] Visualize examples during training with augmented images
 - [ ] Test out different augmentations during training 
 
-
+Notes:
+* Some augmented images in intensity are black 
 
 #### To do
 ##### Reading
@@ -299,20 +300,16 @@ vacation
 - [ ] Try to use the whole image instead of the ROI
 - [ ] Auto extract ROI
 
-llefolgo
 
 gamma in between 0.7 and 1.5
 
 #### Config file
-- [ ] spatial without elastic
-- [ ] intensity
-- [ ] spatial + intensity
-- [ ] spatial + elastic
-
-flip and scale, rotation 90, 180 deg always
-+ rotation 30 deg + translate
-+ elastic
-+ gaussian noise always
-+ bias field, adjust contrast(gamma)
+- [ ] spatial without elastic: flip and scale, rotation 90, 180 deg always
+- [ ] spatial without elastic: flip and scale, rotation 90, 180 deg always + rotation 30 deg + translate
+- [ ] spatial + elastic : flip and scale, rotation 90, 180 deg always
+- [ ] intensity : gaussian noise always
+- [ ] intensity : gaussian noise always + bias field, adjust contrast(gamma)
+- [ ] spatial + intensity: flip and scale, rotation 90, 180 deg always + rotation 30 deg + translate + gaussian noise always
+- [ ] spatial + intensity: flip and scale, rotation 90, 180 deg always + rotation 30 deg + translate + gaussian noise always + bias field, adjust contrast(gamma)
 
 

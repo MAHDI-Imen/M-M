@@ -31,6 +31,7 @@ def pipeline(config_name="config.config"):
     dm = CentreDataModule(
         config.TRAINING_VENDOR,
         split_ratio=config.SPLIT_RATIO,
+        transform=config.TRANSFORM,
         load_transform=config.LOAD_TRANSFORM,
         batch_size=config.BATCH_SIZE,
     )
@@ -41,8 +42,9 @@ def pipeline(config_name="config.config"):
         logger=wandb_logger,
         log_every_n_steps=1,
         enable_model_summary=False,
-        callbacks=[EarlyStopping("val_loss", patience=2)],
+        callbacks=[EarlyStopping("val_loss", patience=config.PATIENCE)],
         fast_dev_run=config.FAST_DEV_RUN,
+        enable_progress_bar=False,
     )
 
     trainer.fit(model, datamodule=dm)

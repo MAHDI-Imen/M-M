@@ -37,14 +37,34 @@ class LitUnet(pl.LightningModule):
         self.model_name = model_name
         self.criterion = CrossEntropyLoss(reduction="mean")
 
+        self.wandb_logger = None
+
     def forward(self, x):
         output = self.Unet(x)
         return output
 
+    def on_train_start(self):
+        for logger in self.trainer.loggers:
+            if isinstance(logger, pl_loggers.WandbLogger):
+                self.wandb_logger = logger.experiment
+                break
+
+        self.table = wandb.Table(columns=["BatchID", "Image"])
+
     def training_step(self, batch, batch_idx):
+        x, y = batch
         loss = self._commun_step(batch)
         self.log("train_loss", loss, prog_bar=True, on_epoch=True, on_step=False)
+
+        y_pred = self._get_predictions(x)
+
+        if batch_idx % 30 == 0:
+            self._log_to_wandb(x, y, y_pred, batch_idx)
+
         return loss
+
+    def on_train_end(self):
+        self.wandb_logger.log({f"Train/{self.model_name}": self.table})
 
     def validation_step(self, batch, batch_idx):
         loss = self._commun_step(batch)
@@ -52,6 +72,12 @@ class LitUnet(pl.LightningModule):
         return loss
 
     def on_test_start(self):
+        if self.wandb_logger is None:
+            for logger in self.trainer.loggers:
+                if isinstance(logger, pl_loggers.WandbLogger):
+                    self.wandb_logger = logger.experiment
+                    break
+
         self.results = pd.DataFrame(columns=["Centre", "subject_idx"])
 
         self.results = self.results.assign(
@@ -76,13 +102,7 @@ class LitUnet(pl.LightningModule):
             IoU_RV_ES=None,
         )
 
-        self.wandb_logger = None
-        for logger in self.trainer.loggers:
-            if isinstance(logger, pl_loggers.WandbLogger):
-                self.wandb_logger = logger.experiment
-                break
-
-        self.table = wandb.Table(columns=["Centre", "SubjectID", "Slice", "Image"])
+        self.table = wandb.Table(columns=["Centre","Image"])
 
     def test_step(self, batch, batch_idx, dataloader_idx):
         centre = dataloader_idx
@@ -93,7 +113,7 @@ class LitUnet(pl.LightningModule):
         self.results.loc[len(self.results)] = [centre, batch_idx] + scores
 
         if batch_idx == 1:
-            self._log_to_wandb(x, y, y_pred, centre, batch_idx)
+            self._log_to_wandb(x, y, y_pred, centre)
 
         loss = self._commun_step(batch)
         self.log("test_loss", loss, prog_bar=True, on_epoch=True, on_step=False)
@@ -135,25 +155,27 @@ class LitUnet(pl.LightningModule):
         y_pred = argmax(prob, dim=1)
         return y_pred
 
-    def _log_to_wandb(self, images, labels, predictions, centre, batch_idx):
+    def _log_to_wandb(self, images, labels, predictions, index):
         class_labels = {1: "LV", 2: "MYO", 3: "RV"}
 
         for slice, (img, label, pred) in enumerate(zip(images, labels, predictions)):
+            masks = {
+                "groung truth": {
+                    "mask_data": label.cpu(),
+                    "class_labels": class_labels,
+                },
+                "prediction": {
+                    "mask_data": pred.cpu(),
+                    "class_labels": class_labels,
+                },
+            }
+
             mask_img = wandb.Image(
                 img.cpu(),
-                masks={
-                    "prediction": {
-                        "mask_data": pred.cpu(),
-                        "class_labels": class_labels,
-                    },
-                    "groung truth": {
-                        "mask_data": label.cpu(),
-                        "class_labels": class_labels,
-                    },
-                },
+                masks=masks,
             )
 
-            self.table.add_data(centre, batch_idx, slice, mask_img)
+            self.table.add_data(index ,mask_img)
 
     def configure_optimizers(self):
         return optim.AdamW(self.parameters(), lr=self.lr)

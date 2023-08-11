@@ -88,7 +88,7 @@ class Centre2DDataset(Dataset):
             image = transformed_dict["img"]
             seg = transformed_dict["seg"]
 
-        seg = seg[0]  # to remove the channel dimension
+        seg = seg.squeeze()  # to remove the channel dimension
 
         return image, seg
 
@@ -101,7 +101,6 @@ class CentreDataModule(LightningDataModule):
         val_centre=3,
         split_ratio=0.7,
         transform=None,
-        target_transform=None,
         load_transform=None,
         batch_size=8,
     ):
@@ -113,7 +112,6 @@ class CentreDataModule(LightningDataModule):
         self.val_centre = val_centre
 
         self.transform = transform
-        self.target_transform = target_transform
         self.load_transform = load_transform
 
         self.metadata = load_metadata()
@@ -149,7 +147,6 @@ class CentreDataModule(LightningDataModule):
                 self.train_centre,
                 self.metadata,
                 self.transform,
-                self.target_transform,
                 load_transform=self.load_transform,
             )
 
@@ -172,7 +169,10 @@ class CentreDataModule(LightningDataModule):
 
     def train_dataloader(self):
         return DataLoader(
-            self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=4
+            self.train_dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=4,
         )
 
     def val_dataloader(self):
