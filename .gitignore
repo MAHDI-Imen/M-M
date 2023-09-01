@@ -17,3 +17,6 @@ wandb/
 debug-cli.mahdi-22.log
 
 *.json
+
+
+*contrastive.ckpt

@@ -33,10 +33,12 @@ def load_and_transform_images(paths, transform=None):
     return images, ps
 
 
-def load_2D_data(centre, metadata=None, transform=None):
+def load_2D_data(centre=1, metadata=None, transform=None, subject_ids=None):
     if metadata is None:
         metadata = load_metadata()
-    subject_ids = list(metadata[metadata.Centre == centre].index)
+
+    if subject_ids is None:
+        subject_ids = list(metadata[metadata.Centre == centre].index)
 
     data_dir = "Data/M&Ms/OpenDataset"
 

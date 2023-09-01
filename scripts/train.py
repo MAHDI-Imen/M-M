@@ -8,7 +8,12 @@ from torch import argmax
 import pytorch_lightning.loggers as pl_loggers
 import pandas as pd
 
-from metrics import get_metric_scores
+from monai.losses.dice import DiceLoss
+
+try:
+    from metrics import get_metric_scores
+except ModuleNotFoundError:
+    from scripts.metrics import get_metric_scores
 import wandb
 
 
@@ -35,7 +40,9 @@ class LitUnet(pl.LightningModule):
 
         self.lr = lr
         self.model_name = model_name
-        self.criterion = CrossEntropyLoss(reduction="mean")
+        self.criterion = DiceLoss(
+            reduction="mean", squared_pred=True, include_background=True, softmax=True
+        )
 
         self.wandb_logger = None
 
@@ -68,8 +75,31 @@ class LitUnet(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         loss = self._commun_step(batch)
-        self.log("val_loss", loss, prog_bar=True, on_epoch=True, on_step=False)
-        return loss
+        x, y = batch
+        y_pred = self._get_predictions(x)
+
+        scores = get_metric_scores(y, y_pred)
+
+        ed_lv_dice = scores[1]
+        es_lv_dice = scores[5]
+        ed_myo_dice = scores[2]
+        es_myo_dice = scores[6]
+        ed_rv_dice = scores[3]
+        es_rv_dice = scores[7]
+
+        # self.log("val_loss", loss, prog_bar=True, on_epoch=True, on_step=False)
+        log_dict = {
+            "val_loss": loss,
+            "ed_lv_dice": ed_lv_dice,
+            "es_lv_dice": es_lv_dice,
+            "ed_myo_dice": ed_myo_dice,
+            "es_myo_dice": es_myo_dice,
+            "ed_rv_dice": ed_rv_dice,
+            "es_rv_dice": es_rv_dice,
+        }
+        self.log_dict(log_dict, prog_bar=True, on_epoch=True, on_step=False)
+
+        return log_dict
 
     def on_test_start(self):
         if self.wandb_logger is None:
@@ -102,7 +132,7 @@ class LitUnet(pl.LightningModule):
             IoU_RV_ES=None,
         )
 
-        self.table = wandb.Table(columns=["Centre","Image"])
+        self.table = wandb.Table(columns=["Centre", "Image"])
 
     def test_step(self, batch, batch_idx, dataloader_idx):
         centre = dataloader_idx
@@ -115,13 +145,29 @@ class LitUnet(pl.LightningModule):
         if batch_idx == 1:
             self._log_to_wandb(x, y, y_pred, centre)
 
-        loss = self._commun_step(batch)
-        self.log("test_loss", loss, prog_bar=True, on_epoch=True, on_step=False)
+        ed_lv_dice = scores[1]
+        es_lv_dice = scores[5]
+        ed_myo_dice = scores[2]
+        es_myo_dice = scores[6]
+        ed_rv_dice = scores[3]
+        es_rv_dice = scores[7]
 
-        return loss
+        log_dict = {
+            "ed_lv_dice": ed_lv_dice,
+            "es_lv_dice": es_lv_dice,
+            "ed_myo_dice": ed_myo_dice,
+            "es_myo_dice": es_myo_dice,
+            "ed_rv_dice": ed_rv_dice,
+            "es_rv_dice": es_rv_dice,
+        }
+
+        # get the mean of the metrics
+        mean_dice = sum(log_dict.values()) / len(log_dict)
+        self.log("mean_dice", mean_dice, prog_bar=True, on_epoch=True, on_step=False)
+        return mean_dice
 
     def on_test_end(self):
-        self.wandb_logger.log({self.model_name: self.table})
+        # self.wandb_logger.log({self.model_name: self.table})
         results = self._save_results()
 
         self.save_hyperparameters()
@@ -133,7 +179,7 @@ class LitUnet(pl.LightningModule):
         output = self(x)
         y_one_hot = one_hot(y.long(), num_classes=4)
         y_one_hot = rearrange(y_one_hot, "b h w c -> b c h w").double()
-        loss = self.criterion(output, y_one_hot)
+        loss = self.criterion(y_one_hot, output)
         return loss
 
     def _save_results(self):
@@ -175,10 +221,18 @@ class LitUnet(pl.LightningModule):
                 masks=masks,
             )
 
-            self.table.add_data(index ,mask_img)
+            self.table.add_data(index, mask_img)
 
     def configure_optimizers(self):
-        return optim.AdamW(self.parameters(), lr=self.lr)
+        optimizer = optim.AdamW(self.parameters(), lr=self.lr)
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, patience=3, verbose=True, factor=0.5
+        )
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": scheduler,
+            "monitor": "val_loss",
+        }
 
 
 def main():

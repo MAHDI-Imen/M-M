@@ -276,6 +276,7 @@ vacation
 
 Notes:
 * Some augmented images in intensity are black 
+* Experiments must be finetuned one by one when applying augmentations. Running the scripts in parallel will not work.
 
 #### To do
 ##### Reading

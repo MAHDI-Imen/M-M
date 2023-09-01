@@ -44,7 +44,7 @@ def pipeline(config_name="config.config"):
         enable_model_summary=False,
         callbacks=[EarlyStopping("val_loss", patience=config.PATIENCE)],
         fast_dev_run=config.FAST_DEV_RUN,
-        enable_progress_bar=False,
+        enable_progress_bar=True,
     )
 
     trainer.fit(model, datamodule=dm)
