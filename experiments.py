@@ -1,33 +1,27 @@
 import os
-from glob import glob
-from time import time, strftime, gmtime
+from scripts.utils import Timer, get_file_basenames_with_path_format, get_venv_status
+
+TIME_FORMAT = "%H:%M:%S"
+VENV_ACTIVATED = True
+CONFIG_FILE_PATH_FORMAT = "scripts/config/*.py"
 
 
+@Timer(time_format=TIME_FORMAT, function_name="all experiments")
 def main():
-    config_files_paths = list(glob("scripts/config/*.py"))
-    config_files = [
-        os.path.splitext(os.path.basename(path))[0] for path in config_files_paths
-    ]
+    config_file_names = get_file_basenames_with_path_format(CONFIG_FILE_PATH_FORMAT)
 
-    if not os.environ.get("VIRTUAL_ENV"):
+    VENV_STATUS = get_venv_status()
+    if VENV_STATUS != VENV_ACTIVATED:
         os.system("source .venv/bin/activate")
 
-    time_format = "%H:%M:%S"
-    experiment_start_time = time()
+    for config_file_name in config_file_names:
+        run_pipeline_with_config(config_file_name)
 
-    for config_file in config_files:
-        run_start_time = time()
-        print(f"Running pipeline for {config_file}...")
-        os.system(f"python scripts/pipeline.py -c config.{config_file}")
-        run_end_time = time()
-        elapsed_time = strftime(time_format, gmtime(run_end_time - run_start_time))
-        print(f"Finished {config_file} in {elapsed_time}.")
 
-    experiment_end_time = time()
-    elapsed_time = strftime(
-        time_format, gmtime(experiment_end_time - experiment_start_time)
-    )
-    print(f"Finished all experiments in {elapsed_time}.")
+@Timer(time_format=TIME_FORMAT, function_name="pipeline")
+def run_pipeline_with_config(config_file_name):
+    print(f"Running pipeline for {config_file_name}...")
+    os.system(f"python scripts/pipeline.py -c config.{config_file_name}")
 
 
 if __name__ == "__main__":
