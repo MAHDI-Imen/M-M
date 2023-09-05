@@ -1,5 +1,6 @@
 import os
 from scripts.utils import Timer, get_file_basenames_with_path_format, get_venv_status
+from scripts.pipeline import pipeline
 
 TIME_FORMAT = "%H:%M:%S"
 VENV_ACTIVATED = True
@@ -21,7 +22,7 @@ def main():
 @Timer(time_format=TIME_FORMAT, function_name="pipeline")
 def run_pipeline_with_config(config_file_name):
     print(f"Running pipeline for {config_file_name}...")
-    os.system(f"python scripts/pipeline.py -c config.{config_file_name}")
+    pipeline(config_name=f"scripts.config.{config_file_name}")
 
 
 if __name__ == "__main__":

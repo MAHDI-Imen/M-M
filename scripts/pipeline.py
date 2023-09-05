@@ -2,10 +2,22 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning import seed_everything
-from train import LitUnet
-from data import CentreDataModule
 
-from result_analysis import save_results
+try:
+    from train import LitUnet
+except ModuleNotFoundError:
+    from scripts.train import LitUnet
+
+try:
+    from data import CentreDataModule
+except ModuleNotFoundError:
+    from scripts.data import CentreDataModule
+
+try:
+    from result_analysis import save_results
+except ModuleNotFoundError:
+    from scripts.result_analysis import save_results
+
 import importlib
 import os
 
@@ -15,51 +27,47 @@ import argparse
 
 
 def pipeline(config_name="config.config"):
-    config = importlib.import_module(config_name)
+    CONFIG = importlib.import_module(config_name)
 
-    if not os.path.exists(f"models/{config.MODEL_NAME}"):
-        os.mkdir(f"models/{config.MODEL_NAME}")
+    MODEL_DIR = f"models/{CONFIG.MODEL_NAME}"
+    MODEL_DIR_EXISTS = os.path.exists(MODEL_DIR)
+    if not MODEL_DIR_EXISTS:
+        os.mkdir(MODEL_DIR)
 
-    seed_everything(config.SEED)
+    seed_everything(CONFIG.SEED)
 
     wandb_logger = WandbLogger(
-        project=config.PROJECT_NAME, entity=config.ENTITY, name=config.MODEL_NAME
+        project=CONFIG.PROJECT_NAME, entity=CONFIG.ENTITY, name=CONFIG.MODEL_NAME
     )
 
-    model = LitUnet(model_name=config.MODEL_NAME, lr=config.LEARNING_RATE)
+    model = LitUnet(model_name=CONFIG.MODEL_NAME, lr=CONFIG.LEARNING_RATE)
 
     dm = CentreDataModule(
-        config.TRAINING_VENDOR,
-        split_ratio=config.SPLIT_RATIO,
-        transform=config.TRANSFORM,
-        load_transform=config.LOAD_TRANSFORM,
-        batch_size=config.BATCH_SIZE,
+        CONFIG.TRAINING_VENDOR,
+        split_ratio=CONFIG.SPLIT_RATIO,
+        transform=CONFIG.TRANSFORM,
+        load_transform=CONFIG.LOAD_TRANSFORM,
+        batch_size=CONFIG.BATCH_SIZE,
     )
 
     trainer = pl.Trainer(
-        max_epochs=config.NUM_EPOCHS,
+        max_epochs=CONFIG.NUM_EPOCHS,
         deterministic=True,
         logger=wandb_logger,
         log_every_n_steps=1,
         enable_model_summary=False,
-        callbacks=[EarlyStopping("val_loss", patience=config.PATIENCE)],
-        fast_dev_run=config.FAST_DEV_RUN,
+        callbacks=[EarlyStopping("val_loss", patience=CONFIG.PATIENCE)],
+        fast_dev_run=CONFIG.FAST_DEV_RUN,
         enable_progress_bar=True,
     )
 
     trainer.fit(model, datamodule=dm)
 
-    trainer.save_checkpoint(f"models/{config.MODEL_NAME}/{config.MODEL_NAME}.ckpt")
+    trainer.save_checkpoint(f"{MODEL_DIR}/{CONFIG.MODEL_NAME}.ckpt")
 
-    results = trainer.test(model, ckpt_path="best", datamodule=dm)
+    mean_dice_results = trainer.test(model, ckpt_path="best", datamodule=dm)
 
-    fig = save_results(config.MODEL_NAME)
-
-    wandb_logger.experiment.log({f"Results/{config.MODEL_NAME}": wandb.Image(fig)})
-
-    wandb.finish()
-
-    print(results)
+    metric_bbox_fig = save_results(CONFIG.MODEL_NAME)
 
 
 def main():
