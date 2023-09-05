@@ -297,12 +297,13 @@ Notes:
 
 - [ ] Contrastive learning for automatic augmentation
 
+- [ ] Use nnUnet 
+
 ##### If I have extra time
 - [ ] Try to use the whole image instead of the ROI
 - [ ] Auto extract ROI
 
 
-gamma in between 0.7 and 1.5
 
 #### Config file
 - [ ] spatial without elastic: flip and scale, rotation 90, 180 deg always
@@ -314,3 +315,19 @@ gamma in between 0.7 and 1.5
 - [ ] spatial + intensity: flip and scale, rotation 90, 180 deg always + rotation 30 deg + translate + gaussian noise always + bias field, adjust contrast(gamma)
 
 
+
+## Week 7
+### Tasks
+Try the various augmentations and analyze results
+
+## Week 8
+### Tasks
+Implement Contrastive learning for automatic augmentation idea and test it
+
+## Week 9
+### Tasks
+Read nnUnet paper, implement it and test it
+
+## Week 10
+### Tasks
+Refactor code and write documentation and report
